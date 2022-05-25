@@ -4,12 +4,9 @@ Modified by Jeremiah Coholich for use in training on the Unitree Aliengo robot.
 Original code from NVIDIA:
 https://developer.nvidia.com/isaac-gym
 
-Models are trained with the rl_games implementation, which I have also modified
-to support logging with Weights and Biases, among other things.
+Models are trained with my fork of the rl_games repo, which includes support for logging with [Weights and Biases](https://wandb.ai/site), among other things.
 
-Original rl_games repo: https://github.com/Denys88/rl_games
-
-My modified implementation: https://github.gatech.edu/jcoholich3/rl_games.git
+rl_games fork: https://github.com/jmcoholich/rl_games
 
 This README contains instructions for installing both my modified versions of
 isaacgym and the rl_games library.
