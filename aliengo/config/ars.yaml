@@ -1,0 +1,10 @@
+n_dirs: 200
+top_dirs: 200
+delta_std: 0.025
+n_samples: 100_000_000_000
+lr: 0.15
+eval_int: 10
+eval_runs: 1
+save_int: 100
+
+steps_per_eps: 200

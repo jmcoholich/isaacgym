@@ -1,0 +1,92 @@
+# if given, will override the device setting in gym.
+env:
+  numEnvs: 10000
+  envSpacing: 4.0
+  # resetDist: 3.0
+  maxEffort: 400.0
+  # numObservations: 16441  # 42 w/o vision
+  numActions: 12
+  actionSpace: foot_positions  # can either be 'pmtg', 'joints', 'foot_positions'
+  controlFrequencyInv: 1 # this is action repeat
+
+  joint_angle_lb: [-1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795, -2.77507351, -1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795  , -2.77507351]
+  joint_angle_ub: [ 1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048, 1.570795  , -0.64577182]
+  # joint_angle_lb: [-1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159, -2.77507351, -1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159  , -2.77507351]
+  # joint_angle_ub: [ 1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048, 3.14159  , -0.64577182]
+  foot_pos_lb: [-0.5, -0.5, -0.6]
+  foot_pos_ub: [0.5, 0.5, -0.1]
+  joint_stiffness: 1000
+  joint_damping: 100
+  termination:
+    reset_height_lb: 0.2  # the height bounds are overridden if there are stepping stones
+    reset_height_ub: 0.8
+    euler_angles: [0.5, 0.5, 0.5]  # in multiples of pi
+    timeout: 3600 # in simulation steps
+
+  # pmtg:
+  #   residual: 0.05  # plus/minus this value in foot position space meters
+  #   lb: [0.05, -0.6, 0.0]  # amplitude, standing_height, frequency
+  #   ub: [0.15, -0.2, 2.0]
+  #   phase_offset: [0.5, 0.0, 0.0, 0.5]  # trot
+  #   step_height: 0.10
+  footstep_target_parameters:
+    step_length: 0.1
+    step_length_rand: 0.05 # range of uniform distribution to randomize step len by
+    step_width: 0.25
+    step_width_rand: 0.01
+    base_length: 0.45 # this is the distance between front and back legs nominally
+    length_offset: -0.02
+    n_cycles: 20 # how many cycles of 4 footsteps to generate in the training env
+    gait: walk
+    footstep_rand: 0.025  # range of uniform displacement to apply to every footstep
+    footstep_distance_threshold: 0.01  # m
+
+
+  reward:
+    base_vel_coef: 0.0
+    base_vel_clip: 1.0
+    torque_pen_coef: 0.000001
+    euler_angle_rew_coef: [-0.00, -0.00, -0.00]
+    collision_penalty: 0.25
+    hit_footstep: 5.0
+    velocity_towards_footstep: 1.0
+    velocity_towards_footstep_clip: 0.5
+
+  # vision: # automatically gets added to observation if not commented out
+  #   size: 128  # only support square images for now
+
+  observation:
+    - base_position
+    - base_6d_orientation
+    - base_velocity
+    - base_angular_velocity
+
+    - joint_positions
+    - joint_velocities
+    - joint_torques
+
+    # - trajectory_generator_phase
+    - foot_contact_binary
+    - footstep_target_distance
+    # - stepping_stone_state
+
+
+  asset:
+    assetRoot: "../../assets"
+    assetFileName: "urdf/aliengo/urdf/aliengo.urdf"
+
+  plane:
+    staticFriction: 1.0  # [-]
+    dynamicFriction: 1.0  # [-]
+    restitution: 0.        # [-]
+
+  # stepping_stones:
+  #   distance: 4  # m
+  #   height_range: 0.2
+  #   density: 20
+  #   stone_dim: 0.2
+
+
+
+task:
+  randomize: False

@@ -1,0 +1,6 @@
+Policy Type,Training_Reward,Flat_Ground,Stepping_Stones_25%_infill_0.0_height_variation,Stepping_Stones_50%_infill_0.0_height_variation,Stepping_Stones_75%_infill_0.0_height_variation,Stepping_Stones_100%_infill_0.0_height_variation,Stepping_Stones_25%_infill_0.1_height_variation,Stepping_Stones_50%_infill_0.1_height_variation,Stepping_Stones_75%_infill_0.1_height_variation,Stepping_Stones_100%_infill_0.1_height_variation
+"Hierarchical, trained on Flat Ground",2948.06 ± 148.01,0.63 ± 1.30,-0.03 ± 0.04,-0.03 ± 0.05,0.02 ± 0.05,0.57 ± 0.95,-0.03 ± 0.04,-0.04 ± 0.05,-0.02 ± 0.06,-0.05 ± 0.04
+"Hierarchical, trained on Flat Ground w/ TG",2404.39 ± 29.52,2.88 ± 0.40,-0.02 ± 0.01,0.02 ± 0.01,0.00 ± 0.03,1.78 ± 0.59,-0.00 ± 0.03,-0.02 ± 0.03,0.04 ± 0.05,0.14 ± 0.12
+"Hierarchical, trained on Stepping Stones w/ state and TG",1611.22 ± 127.52,2.46 ± 1.08,0.04 ± 0.01,0.48 ± 0.21,1.68 ± 0.80,2.82 ± 0.44,0.04 ± 0.02,0.25 ± 0.12,1.05 ± 0.35,1.60 ± 0.56
+"Flat, trained on Flat Ground w/ TG",434.43 ± 14.76,6.95 ± 0.91,0.10 ± 0.03,0.23 ± 0.09,0.66 ± 0.27,6.65 ± 1.95,0.08 ± 0.03,0.23 ± 0.07,0.42 ± 0.21,2.09 ± 1.10
+"Flat, trained on Stepping Stones w/ state and TG",369.72 ± 28.60,5.25 ± 2.83,0.45 ± 0.05,3.11 ± 0.42,6.56 ± 0.86,6.72 ± 1.52,0.33 ± 0.06,2.07 ± 0.23,5.22 ± 0.21,5.87 ± 0.48

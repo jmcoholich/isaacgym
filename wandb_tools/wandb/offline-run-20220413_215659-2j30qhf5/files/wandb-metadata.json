@@ -1,0 +1,18 @@
+{
+    "os": "Linux-5.13.0-39-generic-x86_64-with-debian-bullseye-sid",
+    "python": "3.7.10",
+    "heartbeatAt": "2022-04-14T01:56:59.756981",
+    "startedAt": "2022-04-14T01:56:59.444456",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "gpu_count": 1,
+    "cpu_count": 16,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "plotting.py",
+    "codePath": "plotting.py",
+    "host": "jeremiah-desktop",
+    "username": "jeremiah",
+    "executable": "/home/jeremiah/anaconda3/envs/rlgpu/bin/python"
+}

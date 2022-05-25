@@ -1,0 +1,125 @@
+# Features of iteration 9 (to be run with cfg_train = rlg_aliengo_9.yaml)
+# - contact info is limited to binary contact switch based on +z contact force
+# - 0.99 additional reward for hitting center of footstep vs 0.5 before
+# - 512 NN vs 256 before
+# - 12 vs 8 mini epochs
+# - 0.998 discount factor vs 0.99 before
+# - 10x longer episodes
+# - 2000 vs 1750 p gain
+# - 75 steps vs 50 steps, which means 300k vs 200k samples per update.
+# - slightly harder env with different rewards
+env:
+  numEnvs: 4000
+  envSpacing: 4.0
+  numActions: 12
+  actionSpace: foot_positions  # can either be 'pmtg', 'joints', 'foot_positions'
+  controlFrequencyInv: 1 # this is action repeat
+
+  joint_angle_lb: [-1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795, -2.77507351, -1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795  , -2.77507351]
+  joint_angle_ub: [ 1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048, 1.570795  , -0.64577182]
+  # joint_angle_lb: [-1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159, -2.77507351, -1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159  , -2.77507351]
+  # joint_angle_ub: [ 1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048, 3.14159  , -0.64577182]
+  foot_pos_lb: [-0.5, -0.5, -0.6]
+  foot_pos_ub: [0.5, 0.5, -0.1]
+  joint_stiffness: 2000
+  joint_damping: 100
+
+  termination:
+    reset_height_lb: 0.2  # the height bounds are overridden if there are stepping stones
+    reset_height_ub: 0.8
+    euler_angles: [0.5, 0.5, 0.5]  # in multiples of pi
+    timeout: 90000 # in simulation steps
+    # no_footstep_in: 300  # terminate if the agent hasn't hit the next footstep in 5 seconds (to prevent rew hacking)
+
+  # pmtg:
+  #   residual: [0.1, 0.1, 0.02]  # xyz residual for each foot in foot space
+  #   lb: [-0.15, -0.3, 0.0]  # amplitude, standing_height, frequency
+  #   ub: [0.25, -0.5, 3.0]
+  #   phase_offset: [0.5, 0.0, 0.0, 0.5]  # walk FL, FR, RL, RR
+  #   step_height: 0.05
+
+  # footstep_target_parameters:
+  #   step_length: 0.05
+  #   step_length_rand: 0.15 # range of uniform distribution to randomize step len by
+  #   radial_range: [-90, 90] # in degrees
+  #   # step_width: 0.2
+  #   # step_width_rand: 0.05
+  #   # base_length: 0.45 # this is the distance between front and back legs nominally
+  #   # length_offset: -0.02
+  #   n_cycles: 4000 # how many cycles of 4 footsteps to generate in the training env
+  #   gait: trot
+  #   footstep_rand: 0.15 # range of uniform displacement to apply to every footstep
+  #   footstep_distance_threshold: 0.075  # in meters. This get a multiplier based on how close to the center it is.
+  #   center_rew_multiplier: 0.99
+  #   contact_force_treshold: 5.0 # N
+  #   update_period: 1
+
+
+  reward:
+    base_x_vel: [5.0, 0.125]  # rew term coef, clip value
+    torque_penalty: [0.000005]
+    euler_angle_pen: [0.05, 0.05, 0.0]
+    collision_penalty: [0.5]
+    # hit_footstep: [1.0]
+    # velocity_towards_footstep: [0.00, 1000000.0] # coef, clip
+    # foot_lift_penalty: [0.125]
+    # foot_lift_penalty_smooth: [0.125]
+    # current_footstep_for_logging: [None] # this is purely just for logging, using the structure I already set up
+    smoothness: [0.125] # [0.25]
+    slip_penalty: [0.025]
+    base_x_pos: [0.0]
+    # foot_lift: [0.125]
+    # contact_rew: [0.00]
+    # foot_stay: [0.125]
+
+  # vision: # automatically gets added to observation if not commented out
+  #   size: 128  # only support square images for now
+
+  observation:
+    # - base_position
+    - base_roll
+    - base_pitch
+    - base_yaw
+    # - base_velocity
+    # - base_angular_velocity
+    - base_roll_velocity
+    - base_pitch_velocity
+
+    # - joint_positions
+    # - joint_velocities
+    - joint_torques
+
+    - foot_positions
+    - foot_velocities
+
+    # - trajectory_generator_phase
+    - foot_contact_binary
+    # - footstep_target_distance
+    - start_token
+    - previous_action
+    - previous_previous_action
+    # - footstep_generator_current_foot_one_hot
+    - stepping_stone_state_large
+
+  prev_obs_stacking: 0
+
+  asset:
+    assetRoot: "../../assets"
+    assetFileName: "urdf/aliengo/urdf/aliengo.urdf"
+
+  plane:
+    staticFriction: 1.0  # [-]
+    dynamicFriction: 0.80  # [-]
+    restitution: 0.        # [-]
+
+  stepping_stones:
+    distance: 100  # m
+    height_range: 0.0
+    density: 0.25
+    stone_dim: 0.075
+    path_width: 2.0
+    spacing: 0.01  # this is the spacing between the stones on the grid
+    height: 10
+
+task:
+  randomize: False

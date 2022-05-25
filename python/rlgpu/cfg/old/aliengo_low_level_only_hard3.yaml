@@ -1,0 +1,100 @@
+# if given, will override the device setting in gym.
+env:
+  numEnvs: 20000
+  envSpacing: 4.0
+  numActions: 12
+  actionSpace: foot_positions  # can either be 'pmtg', 'joints', 'foot_positions'
+  controlFrequencyInv: 1 # this is action repeat
+
+  joint_angle_lb: [-1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795, -2.77507351, -1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795  , -2.77507351]
+  joint_angle_ub: [ 1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048, 1.570795  , -0.64577182]
+  # joint_angle_lb: [-1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159, -2.77507351, -1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159  , -2.77507351]
+  # joint_angle_ub: [ 1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048, 3.14159  , -0.64577182]
+  foot_pos_lb: [-0.5, -0.5, -0.6]
+  foot_pos_ub: [0.5, 0.5, -0.1]
+  joint_stiffness: 50000
+  joint_damping: 5000
+  termination:
+    reset_height_lb: 0.2  # the height bounds are overridden if there are stepping stones
+    reset_height_ub: 0.8
+    euler_angles: [0.5, 0.5, 0.5]  # in multiples of pi
+    timeout: 3600 # in simulation steps
+
+  # pmtg:
+  #   residual: 0.05  # plus/minus this value in foot position space meters
+  #   lb: [0.05, -0.6, 0.0]  # amplitude, standing_height, frequency
+  #   ub: [0.15, -0.2, 2.0]
+  #   phase_offset: [0.5, 0.0, 0.0, 0.5]  # trot
+  #   step_height: 0.10
+  footstep_target_parameters:
+    step_length: 0.05
+    step_length_rand: 0.05 # range of uniform distribution to randomize step len by
+    step_width: 0.2
+    step_width_rand: 0.05
+    base_length: 0.45 # this is the distance between front and back legs nominally
+    length_offset: -0.02
+    n_cycles: 20 # how many cycles of 4 footsteps to generate in the training env
+    gait: walk
+    footstep_rand: 0.2 # range of uniform displacement to apply to every footstep
+    footstep_distance_threshold: 0.15  # in meters. This get a multiplier based on how close to the center it is.
+    contact_force_treshold: 5 # N
+    update_period: 12
+
+
+  reward:
+    base_x_vel: [0.0, 1.0]  # rew term coef, clip value
+    torque_penalty: [0.000001]
+    # euler_angle_pen: [0.00, 0.00, 0.00]
+    collision_penalty: [0.25]
+    hit_footstep: [2.0]
+    velocity_towards_footstep: [0.5, 1000000.0] # coef, clip
+    foot_lift_penalty: [0.0]
+    foot_lift_penalty_smooth: [0.125]
+    current_footstep_for_logging: [None] # this is purely just for logging, using the structure I already set up
+    smoothness: [0.5]
+
+  # vision: # automatically gets added to observation if not commented out
+  #   size: 128  # only support square images for now
+
+  observation:
+    - base_position
+    - base_6d_orientation
+    - base_velocity
+    - base_angular_velocity
+
+    # - joint_positions
+    # - joint_velocities
+    # - joint_torques
+
+    - foot_positions
+    - foot_velocities
+
+    # - trajectory_generator_phase
+    - foot_contact_binary
+    - foot_contact_forces
+    - footstep_target_distance
+    - start_token
+    - previous_action
+    # - stepping_stone_state
+
+  prev_obs_stacking: 0
+
+  asset:
+    assetRoot: "../../assets"
+    assetFileName: "urdf/aliengo/urdf/aliengo.urdf"
+
+  plane:
+    staticFriction: 1.0  # [-]
+    dynamicFriction: 1.0  # [-]
+    restitution: 0.        # [-]
+
+  # stepping_stones:
+  #   distance: 4  # m
+  #   height_range: 0.2
+  #   density: 20
+  #   stone_dim: 0.2
+
+
+
+task:
+  randomize: False

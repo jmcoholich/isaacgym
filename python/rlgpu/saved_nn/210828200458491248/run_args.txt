@@ -1,0 +1,2 @@
+cfg_train: Base
+cfg_env: low_level_only_hard2

@@ -1,0 +1,93 @@
+env:
+  numEnvs: 4000
+  envSpacing: 4.0
+  numActions: 12
+  actionSpace: foot_positions  # can either be 'pmtg', 'joints', 'foot_positions'
+  controlFrequencyInv: 1 # this is action repeat
+
+  joint_angle_lb: [-1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795, -2.77507351, -1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795  , -2.77507351]
+  joint_angle_ub: [ 1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048, 1.570795  , -0.64577182]
+  # joint_angle_lb: [-1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159, -2.77507351, -1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159  , -2.77507351]
+  # joint_angle_ub: [ 1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048, 3.14159  , -0.64577182]
+  foot_pos_lb: [-0.5, -0.5, -0.6]
+  foot_pos_ub: [0.5, 0.5, -0.1]
+  joint_stiffness: 2000
+  joint_damping: 100
+
+  termination:
+    reset_height_lb: 0.2  # the height bounds are overridden if there are stepping stones
+    reset_height_ub: 0.8
+    euler_angles: [0.5, 0.5, 0.5]  # in multiples of pi
+    timeout: 900 # in simulation steps
+    # no_footstep_in: 300  # terminate if the agent hasn't hit the next footstep in 5 seconds (to prevent rew hacking)
+
+
+  reward:
+    base_x_vel: [10.0, 0.125]  # rew term coef, clip value
+    torque_penalty: [0.000005]
+    euler_angle_pen: [0.05, 0.05, 0.0]
+    collision_penalty: [0.5]
+    # hit_footstep: [1.0]
+    # velocity_towards_footstep: [0.00, 1000000.0] # coef, clip
+    # foot_lift_penalty: [0.125]
+    # foot_lift_penalty_smooth: [0.125]
+    # current_footstep_for_logging: [None] # this is purely just for logging, using the structure I already set up
+    smoothness: [0.125] # [0.25]
+    slip_penalty: [0.025]
+    base_x_pos: [0.0]
+    # foot_lift: [0.125]
+    # contact_rew: [0.00]
+    # foot_stay: [0.125]
+
+  # vision: # automatically gets added to observation if not commented out
+  #   size: 128  # only support square images for now
+
+  observation:
+    # - base_position
+    - base_roll
+    - base_pitch
+    - base_yaw
+    # - base_velocity
+    # - base_angular_velocity
+    - base_roll_velocity
+    - base_pitch_velocity
+
+    # - joint_positions
+    # - joint_velocities
+    - joint_torques
+
+    - foot_positions
+    - foot_velocities
+
+    # - trajectory_generator_phase
+    - foot_contact_binary
+    # - footstep_target_distance
+    - start_token
+    - previous_action
+    - previous_previous_action
+    # - footstep_generator_current_foot_one_hot
+    - stepping_stone_state_large
+
+  prev_obs_stacking: 0
+
+  asset:
+    assetRoot: "../../assets"
+    assetFileName: "urdf/aliengo/urdf/aliengo.urdf"
+
+  plane:
+    staticFriction: 1.0  # [-]
+    dynamicFriction: 0.80  # [-]
+    restitution: 0.        # [-]
+
+  stepping_stones:
+    distance: 5  # m
+    height_range: 0.15
+    density: 0.5
+    stone_dim: 0.075
+    robot_spacing: 0.1
+    spacing: 0.01  # this is the spacing between the stones on the grid
+    height: 5.0
+    include_starting_ss: False
+
+task:
+  randomize: False
