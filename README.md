@@ -22,7 +22,7 @@ Here is list of features I have added:
 - logging with [Weights and Biases](https://wandb.ai/site)
 - my [value-function footstep optimization method](https://www.jeremiahcoholich.com/publication/quadruped_footsteps/)
 - scripts for generating videos from simulation cameras (vs screencap)
-
+- [Augumented Random Search](https://arxiv.org/abs/1803.07055) as an alternative to [PPO](https://arxiv.org/abs/1707.06347)
 
 ## Prereqs
 
