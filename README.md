@@ -1,8 +1,8 @@
 # Isaacgym
 
-Modified by Jeremiah Coholich for use in training on the Unitree Aliengo robot.
+Modified by Jeremiah Coholich for use in training on the [Unitree Aliengo](https://www.unitree.com/products/aliengo/) robot for the project [Learning High-Value Footstep Placements for Quadruped Robots](https://www.jeremiahcoholich.com/publication/quadruped_footsteps/).
 Original code from NVIDIA:
-https://developer.nvidia.com/isaac-gym
+https://developer.nvidia.com/isaac-gym (Preview Release 2)
 
 Models are trained with my fork of the rl_games repo, which includes support for logging with [Weights and Biases](https://wandb.ai/site), among other things.
 
@@ -12,6 +12,17 @@ This README contains instructions for installing both my modified versions of
 isaacgym and the rl_games library.
 
 The full documentation for IsaacGym can be found in `~/isaacgym/docs/`
+
+
+## Features
+Here is list of features I have added:
+- fast vectorized analytical inverse kinematics for the Aliengo quadruped
+- multi-GPU policy evaluation and data gathering pipeline
+- procedural terrain generation
+- logging with [Weights and Biases](https://wandb.ai/site)
+- my [value-function footstep optimization method](https://www.jeremiahcoholich.com/publication/quadruped_footsteps/)
+- scripts for generating videos from simulation cameras (vs screencap)
+
 
 ## Prereqs
 
