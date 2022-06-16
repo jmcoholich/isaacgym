@@ -32,6 +32,26 @@ def get_ws_from_run_id(id):
             return run_.tags[0]
 
 
+def get_wandb_ids_from_run_name(name):
+    """Return a list of run ids from a single run name string."""
+    run_ids = []
+
+    # first, get all the model names for the SOTA runs
+    api = wandb.Api()
+    runs = api.runs("jcoholich/aliengo_12")
+
+    for run_ in runs:
+        if run_.name == name:
+            run_ids.append(run_.config["run_id"])
+
+    print(f"\nRun IDs with name: '{name}'\n")
+    for id_ in run_ids:
+        print(id_)
+    print()
+
+    return run_ids
+
+
 def get_wandb_run_ids(names):
 
     run_ids = {}

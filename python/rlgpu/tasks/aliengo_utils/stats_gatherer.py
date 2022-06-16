@@ -92,11 +92,11 @@ class StatsGatherer:
         # time_stamp = datetime.now().strftime("%d_%m_%Y_%H_%M")
         # fname = 'data' + time_stamp + '.pkl'
         # path = os.path.join(data_dir, fname)
-        data_dir = "footstep_data"
+        data_dir = self.task.args.data_dir
         if not os.path.exists(data_dir):
             os.mkdir(data_dir)
 
-        path = os.path.join(data_dir, self.task.args.save_fname + ".pkl")
+        path = os.path.join(data_dir, self.task.args.save_fname.replace("/", "") + ".pkl")
         # if not os.path.exists(data_dir):
         #     os.makedirs(data_dir)
         with open(path, 'wb') as f:
@@ -110,7 +110,7 @@ class StatsGatherer:
         start = self.batches * self.num_envs
         end = (self.batches + 1) * self.num_envs
         idcs[start: end] = just_terminated
-        self.data["succcessful"][idcs] = self.task.is_successful[idcs].clone()
+        self.data["succcessful"][idcs] = self.task.is_successful[idcs].clone().float()
         if self.task.is_footsteps:
             self.data["footstep_targets"][idcs] = self.task.footstep_generator.footsteps[just_terminated].clone()
             self.data["current_footstep"][idcs] = self.task.footstep_generator.current_footstep[just_terminated].clone()

@@ -396,6 +396,8 @@ def get_args(benchmark=False, use_rlg_config=False):
             "help": "If passed, the argument is the magnitude of perturbations."},
         {"name": "--save_fname", "type": str, "default": None,
             "help": "This is the name of the .pkl save file if using --gather_stats"},
+        {"name": "--data_dir", "type": str, "default": None,
+            "help": "This is the name of the directory that .pkl files are saved to when gather_stats is true"},
         {"name": "--stop_after_footstep", "type": int, "default": -1,
             "help": "If passed, sim terminates after all envs hit this number"
             " of footsteps, then saves self.footstep_generator.footsteps."},

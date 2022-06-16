@@ -1,6 +1,0 @@
-Policy Type,Training_Reward,Flat_Ground,Stepping_Stones_25%_infill_0.0_height_variation,Stepping_Stones_50%_infill_0.0_height_variation,Stepping_Stones_75%_infill_0.0_height_variation,Stepping_Stones_100%_infill_0.0_height_variation,Stepping_Stones_25%_infill_0.1_height_variation,Stepping_Stones_50%_infill_0.1_height_variation,Stepping_Stones_75%_infill_0.1_height_variation,Stepping_Stones_100%_infill_0.1_height_variation
-H flat ground (0.99 tau),5719.35 ± 480.31,2.34 ± 1.87,-0.04 ± 0.04,-0.02 ± 0.04,0.05 ± 0.03,2.72 ± 2.23,-0.03 ± 0.05,-0.05 ± 0.03,-0.03 ± 0.02,-0.01 ± 0.03
-H flat ground + TG,4876.92 ± 75.26,3.82 ± 1.52,-0.02 ± 0.02,-0.00 ± 0.03,-0.01 ± 0.02,2.65 ± 1.21,-0.00 ± 0.03,-0.01 ± 0.03,0.02 ± 0.04,0.14 ± 0.18
-F flat ground + TG,873.28 ± 26.73,14.07 ± 1.91,0.10 ± 0.03,0.24 ± 0.09,0.58 ± 0.27,9.67 ± 4.07,0.09 ± 0.02,0.23 ± 0.07,0.41 ± 0.20,2.40 ± 1.40
-H ss state,2864.07 ± 367.09,5.19 ± 2.46,0.03 ± 0.01,0.46 ± 0.26,2.57 ± 1.41,5.91 ± 1.21,0.04 ± 0.03,0.23 ± 0.09,1.45 ± 0.73,2.81 ± 1.13
-F ss state,474.20 ± 94.72,8.98 ± 5.53,0.44 ± 0.07,3.50 ± 1.21,11.95 ± 1.09,10.93 ± 3.00,0.34 ± 0.08,2.00 ± 0.52,8.81 ± 0.81,11.12 ± 1.45
