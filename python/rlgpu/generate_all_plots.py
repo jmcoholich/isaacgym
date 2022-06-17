@@ -64,14 +64,10 @@ def load_relevent_data(sota, args):
                 env_key = (infill, heightvar)
             elif method == "Proposed Method" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
                 env_key = "flatground"
-                print(method)
-                print(file)
-                print()
             elif method == "End-to-end" and all(x in file_parts for x in ["--no_ss"]):
                 env_key = "flatground"
-                print(method)
-                print(file)
-                print()
+            elif len(file_parts) == 4:  # special case for getting training reward to normalize stats by
+                env_key = "training_rew"
             else:
                 continue
 
@@ -84,7 +80,7 @@ def load_relevent_data(sota, args):
             with open(os.path.join(data_dir, file), 'rb') as f:
                 x = pickle.load(f)
                 temp["successful"] = x["succcessful"]
-                temp["reward"] = x["reward"]
+                temp["reward"] = x["reward"].squeeze().sum(dim=1)
                 temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
                 idx = temp["eps_len"] - 1
                 temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
@@ -135,7 +131,12 @@ def avg_across_seeds(data, metric, floats=False):
                 val[env] = torch.tensor([])
             val[env] = torch.cat([val[env], data[seed][env][metric].cpu().float().mean().unsqueeze(0)])
 
+    if metric == "reward":
+        training_rew = val['training_rew'].mean()
+    val.pop('training_rew')
     for env in val:
+        if metric == "reward":
+            val[env] /= training_rew
         mean = val[env].mean()
         std = val[env].std()
         val[env] = {}
@@ -167,61 +168,6 @@ def generate_sup_plot(data, sota):
     - episode length
     """
 
-    # env_order1 = [
-    #     "Flat_Ground",
-    #     "Stepping_Stones_100%_infill_0.0_height_variation",
-    #     "Stepping_Stones_87.5%_infill_0.0_height_variation",
-    #     "Stepping_Stones_75%_infill_0.0_height_variation",
-    #     "Stepping_Stones_62.5%_infill_0.0_height_variation",
-    #     "Stepping_Stones_50%_infill_0.0_height_variation",
-    #     "Stepping_Stones_37.5%_infill_0.0_height_variation",
-    #     "Stepping_Stones_25%_infill_0.0_height_variation",
-
-    #     "Stepping_Stones_100%_infill_0.05_height_variation",
-    #     "Stepping_Stones_87.5%_infill_0.05_height_variation",
-    #     "Stepping_Stones_75%_infill_0.05_height_variation",
-    #     "Stepping_Stones_62.5%_infill_0.05_height_variation",
-    #     "Stepping_Stones_50%_infill_0.05_height_variation",
-    #     "Stepping_Stones_37.5%_infill_0.05_height_variation",
-    #     "Stepping_Stones_25%_infill_0.05_height_variation",
-
-    #     "Stepping_Stones_100%_infill_0.1_height_variation",
-    #     "Stepping_Stones_87.5%_infill_0.1_height_variation",
-    #     "Stepping_Stones_75%_infill_0.1_height_variation",
-    #     "Stepping_Stones_62.5%_infill_0.1_height_variation",
-    #     "Stepping_Stones_50%_infill_0.1_height_variation",
-    #     "Stepping_Stones_37.5%_infill_0.1_height_variation",
-    #     "Stepping_Stones_25%_infill_0.1_height_variation",
-    # ]
-
-    # x_labels = [
-    #     "Flat Ground",
-    #     "100%  / 0.0",
-    #     "87.5%  / 0.0",
-    #     "75%  / 0.0",
-    #     "62.5%  / 0.0",
-    #     "50%  / 0.0",
-    #     "37.5%  / 0.0",
-    #     "25%  / 0.0",
-
-    #     "100% / 0.05",
-    #     "87.5% / 0.05",
-    #     "75% / 0.05",
-    #     "62.5% / 0.05",
-    #     "50% / 0.05",
-    #     "37.5% / 0.05",
-    #     "25% / 0.05",
-
-    #     "100% / 0.1",
-    #     "87.5% / 0.1",
-    #     "75% / 0.1",
-    #     "62.5% / 0.1",
-    #     "50% / 0.1",
-    #     "37.5% / 0.1",
-    #     "25% / 0.1",
-    # ]
-
-    # plt.figure()
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, sharex=True, figsize=(15 / 1.25 - 1, 3.0 / 1.25 * 4.5 - 2))
     fig.subplots_adjust(hspace=0.5)
     axes = [ax1, ax2, ax3, ax4]
@@ -261,16 +207,17 @@ def generate_sup_plot(data, sota):
         ax.axvspan(14.5, 21.5, facecolor='r', alpha=0.1)
         ax.set_ylabel(metric)
         ax.set_title(metric)
-        if metric == "Successful":
+        print(metric)
+        if metric == "successful":
             ax.set_title("Terrain Traversal Success Rate")
             ax.set_ylabel("Success Rate")
-        elif metric == "Reward":
+        elif metric == "reward":
             ax.set_title("Fraction of Per-timestep Training Reward Achieved")
             ax.set_ylabel("Normalized Reward")
-        elif metric == "Distance_Traveled":
+        elif metric == "distance_traveled":
             ax.set_title("Distance Traveled per Episode")
             ax.set_ylabel("Distance Traveled (m)")
-        elif metric == "Episode_Length":
+        elif metric == "eps_len":
             ax.set_title("Episode Length")
             ax.set_ylabel("Episode Length (timesteps)")
     handles, labels = ax.get_legend_handles_labels()
