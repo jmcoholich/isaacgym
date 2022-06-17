@@ -33,8 +33,15 @@ def main():
     args = get_args()
     if args.id:
         raise NotImplementedError()
+    random_id = str(torch.randint(1000000, (1,)).item())
+    if not os.path.exists("plots"):
+        os.makedirs("plots")
+    save_dir = os.path.join("plots", random_id)
+    os.mkdir(save_dir)
+    args.save_dir = save_dir
     data = load_relevent_data(sota, args)
-    generate_sup_plot(data, sota)
+    generate_sup_plot(data, sota, args)
+    generate_small_plot(data, sota, args)
 
 
 def load_relevent_data(sota, args):
@@ -157,7 +164,7 @@ def avg_across_seeds(data, metric, floats=False):
     #     return f"{all_samples.mean():.2f}" + u" \u00B1 " + f"{all_samples.std():.2f}"
 
 
-def generate_sup_plot(data, sota):
+def generate_sup_plot(data, sota, args):
     """Generate plots with performance on envs in increasing difficulty.
     Each policy type has two lines.
 
@@ -207,7 +214,6 @@ def generate_sup_plot(data, sota):
         ax.axvspan(14.5, 21.5, facecolor='r', alpha=0.1)
         ax.set_ylabel(metric)
         ax.set_title(metric)
-        print(metric)
         if metric == "successful":
             ax.set_title("Terrain Traversal Success Rate")
             ax.set_ylabel("Success Rate")
@@ -226,10 +232,74 @@ def generate_sup_plot(data, sota):
 
     # plt.title("3 random seeds,  30 rollouts each, 10k steps timeout, Error bars are std between seeds")
     # plt.show()
-    if not os.path.exists("plots"):
-        os.makedirs("plots")
-    rand_id = str(torch.randint(100000, (1,)).item())
-    path = "plots/" + "supplot" + rand_id + '.svg'
+    path = os.path.join(args.save_dir, "supplot.svg")
+    plt.savefig(path, bbox_inches='tight')
+    print(f"Saved plot at {path}")
+
+
+def generate_small_plot(data, sota, args):
+    """Generate small plot of just success rate on a more limited sweep
+    of environments
+    """
+    envs_to_plot = [
+        (1.0, 0.0), (0.75, 0.0), (0.5, 0.0), (0.25, 0.0),
+        (1.0, 0.1), (0.75, 0.1), (0.5, 0.1), (0.25, 0.1)
+    ]
+
+    metric = "successful"
+    plt.figure(figsize=(5.0, 2.5))
+    plt.xlabel("Stepping Stone Density / Stone Height Variation (m)", y=-0.025)
+    plt.title("Proposed Method vs End-to-end Policy", y=0.95, x=0.5)
+    ax = plt.gca()
+    marker = itertools.cycle(('s', 'o', 'H', 'D', "^", ">", "<", 's', 'd'))
+    ax.grid()
+    for method in data:
+        vals = avg_across_seeds(data[method], metric)
+        fg_data = vals.pop("flatground")
+        # sort into something that I can plot
+        # sorted_keys = list(vals.keys())
+        sorted_keys = envs_to_plot
+        sorted_keys.sort(key=lambda x: (x[1], -x[0]))
+        y_points = [fg_data["mean"].item()]
+        errors = [fg_data["std"].item()]
+        x_labels = ["Flatground"]
+        for key in sorted_keys:
+            y_points.append(vals[key]["mean"].item())
+            errors.append(vals[key]["std"].item())
+            x_labels.append(f"{key[0] * 100}% / {key[1]}")
+        if method == "Proposed Method":
+            line_fmt = "--"
+        else:
+            line_fmt = "-"
+        fmt = next(marker) + line_fmt
+        ax.errorbar(x_labels, y_points, fmt=fmt, yerr=errors, label=method, capsize=3.0)
+    ax.set_xticklabels(x_labels, rotation=45, ha="right")
+    ax.axvspan(1 - 0.5, 4 + 0.5, facecolor='b', alpha=0.1)
+    # ax.axvspan(7.5, 14.5, facecolor='g', alpha=0.1)
+    ax.axvspan(4.5, 8.5, facecolor='r', alpha=0.1)
+    ax.set_ylabel(metric)
+    ax.set_title(metric)
+    ax.legend(loc=(0.1, 1.02), ncol=2)
+    if metric == "successful":
+        ax.set_title("Terrain Traversal Success Rate", pad=25.0)
+        ax.set_ylabel("Success Rate")
+    elif metric == "reward":
+        ax.set_title("Fraction of Per-timestep Training Reward Achieved")
+        ax.set_ylabel("Normalized Reward")
+    elif metric == "distance_traveled":
+        ax.set_title("Distance Traveled per Episode")
+        ax.set_ylabel("Distance Traveled (m)")
+    elif metric == "eps_len":
+        ax.set_title("Episode Length")
+        ax.set_ylabel("Episode Length (timesteps)")
+    # handles, labels = ax.get_legend_handles_labels()
+    # plt.legend(handles, labels, loc=(0.775, 0.9125))
+    # plt.show()
+
+    # if not os.path.exists("plots"):
+    #     os.makedirs("plots")
+    # path = "plots/" + "smallplot" + '.svg'
+    path = os.path.join(args.save_dir, "smallplot.svg")
     plt.savefig(path, bbox_inches='tight')
     print(f"Saved plot at {path}")
 
