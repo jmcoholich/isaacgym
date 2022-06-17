@@ -27,7 +27,7 @@ def get_args():
 def main():
 
     sota = {
-        "Proposed Method" : "H ss state (0.2 rand new)_debug",  # TODO
+        "Proposed Method" : "H ss state (0.2 rand new)",
         # "End-to-end": "F ss state final",  # TODO
     }
     args = get_args()
@@ -61,50 +61,56 @@ def load_relevent_data(sota, args):
             if "--ss_height_var" in file_parts:
                 heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
                 infill = float(file_parts[file_parts.index("--ss_infill") + 1])
-                checkpoint = file_parts[file_parts.index("--checkpoint") + 1]
+                env_key = (infill, heightvar)
+            elif all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef"]):  # this is the special case for the flatground run
+                env_key = "flatground"
+            else:
+                continue
 
-                if checkpoint not in data[method]:
-                    data[method][checkpoint] = {}
-                data[method][checkpoint][(infill, heightvar)] = {}
-                temp = data[method][checkpoint][(infill, heightvar)]
-                with open(os.path.join(data_dir, file), 'rb') as f:
-                    x = pickle.load(f)
-                    temp["successful"] = x["succcessful"]
-                    temp["reward"] = x["reward"]
-                    temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
-                    idx = temp["eps_len"] - 1
-                    temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
+            checkpoint = file_parts[file_parts.index("--checkpoint") + 1]
+            if checkpoint not in data[method]:
+                data[method][checkpoint] = {}
+            data[method][checkpoint][env_key] = {}
+            temp = data[method][checkpoint][env_key]
 
-                    # common_footstep = x["current_footstep"].min().item()
-                    # num_runs = x["still_running"].shape[0]
-                    # rews_sum = 0.0
-                    # for i in range(num_runs):
-                    #     rews_sum += x["reward"][i, :termination_idcs[i], 0].sum()
+            with open(os.path.join(data_dir, file), 'rb') as f:
+                x = pickle.load(f)
+                temp["successful"] = x["succcessful"]
+                temp["reward"] = x["reward"]
+                temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
+                idx = temp["eps_len"] - 1
+                temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
 
-                    # if is_random:
-                    #     key = "random"
-                    # elif is_optim:
-                    #     key = "optim"
-                    # else:
-                    #     key = "in_place"
-                    # data[checkpoint][key] = {}
-                    # data[checkpoint][key]["Average rew per timestep"] = (rews_sum / termination_idcs.sum()).item()
-                    # data[checkpoint][key]["Average rew per footstep"] = (rews_sum / x['current_footstep'].sum()).item()
-                    # data[checkpoint][key]["Average rew per rollout"] = (rews_sum / num_runs).item()
-                    # data[checkpoint][key]["Average rollout length"] = (termination_idcs.float().mean()).item()
-                    # data[checkpoint][key]["Average footstep reached"] = (x['current_footstep'].float().mean()).item()
-                    # data[checkpoint][key]["Average timesteps per footstep"] = (termination_idcs.float().sum() / x['current_footstep'].float().sum()).item()
+                # common_footstep = x["current_footstep"].min().item()
+                # num_runs = x["still_running"].shape[0]
+                # rews_sum = 0.0
+                # for i in range(num_runs):
+                #     rews_sum += x["reward"][i, :termination_idcs[i], 0].sum()
 
-                    # print(file)
-                    # for k, v in data[checkpoint][key].items():
-                    #     print(f"{k}: {v :0.2f}")
-                    # # print(f"Average rew per timestep: {rews_sum / termination_idcs.sum() :.3f}")
-                    # # print(f"Average rew per footstep: {rews_sum / x['current_footstep'].sum() :.2f}")
-                    # # print(f"Average rew per rollout: {rews_sum / num_runs :.2f}")
-                    # # print(f"Average rollout length: {termination_idcs.float().mean() :.1f}")
-                    # # print(f"Average footstep reached: {x['current_footstep'].float().mean() :.1f}")
-                    # # print(f"Average timesteps per footstep: {termination_idcs.float().sum() / x['current_footstep'].float().sum() :.1f}")
-                    # print("\n")
+                # if is_random:
+                #     key = "random"
+                # elif is_optim:
+                #     key = "optim"
+                # else:
+                #     key = "in_place"
+                # data[checkpoint][key] = {}
+                # data[checkpoint][key]["Average rew per timestep"] = (rews_sum / termination_idcs.sum()).item()
+                # data[checkpoint][key]["Average rew per footstep"] = (rews_sum / x['current_footstep'].sum()).item()
+                # data[checkpoint][key]["Average rew per rollout"] = (rews_sum / num_runs).item()
+                # data[checkpoint][key]["Average rollout length"] = (termination_idcs.float().mean()).item()
+                # data[checkpoint][key]["Average footstep reached"] = (x['current_footstep'].float().mean()).item()
+                # data[checkpoint][key]["Average timesteps per footstep"] = (termination_idcs.float().sum() / x['current_footstep'].float().sum()).item()
+
+                # print(file)
+                # for k, v in data[checkpoint][key].items():
+                #     print(f"{k}: {v :0.2f}")
+                # # print(f"Average rew per timestep: {rews_sum / termination_idcs.sum() :.3f}")
+                # # print(f"Average rew per footstep: {rews_sum / x['current_footstep'].sum() :.2f}")
+                # # print(f"Average rew per rollout: {rews_sum / num_runs :.2f}")
+                # # print(f"Average rollout length: {termination_idcs.float().mean() :.1f}")
+                # # print(f"Average footstep reached: {x['current_footstep'].float().mean() :.1f}")
+                # # print(f"Average timesteps per footstep: {termination_idcs.float().sum() / x['current_footstep'].float().sum() :.1f}")
+                # print("\n")
 
     return data
 
@@ -220,11 +226,13 @@ def generate_sup_plot(data, sota):
         ax.grid()
         for method in data:
             vals = avg_across_seeds(data[method], metric, floats=True)
+            fg_data = vals.pop("flatground")
             # sort into something that I can plot
             sorted_keys = list(vals.keys())
-            y_points = []
-            errors = []
-            x_labels = []
+            sorted_keys.sort(key=lambda x: (x[1], -x[0]))
+            y_points = [fg_data["mean"].item()]
+            errors = [fg_data["std"].item()]
+            x_labels = ["Flatground"]
             for key in sorted_keys:
                 y_points.append(vals[key]["mean"].item())
                 errors.append(vals[key]["std"].item())
