@@ -7,7 +7,8 @@ import subprocess
 
 run_name = "H ss state (0.2 rand new)"
 job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower()
-python_cmd = f"python evaluate_policy.py --run_name='{run_name}' --debug"
+# python_cmd = f"python evaluate_policy.py --run_name='{run_name}' --debug"
+python_cmd = run_name
 
 slurm_options = [
     "--cpus-per-gpu", "7",
