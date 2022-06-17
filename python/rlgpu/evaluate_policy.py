@@ -53,7 +53,7 @@ def generate_commands(args):
         args.timeout = 100
     else:
         env_difficulties = [
-            (None, None),  # this is for flat ground
+            # (None, None),  # this is for flat ground
             (.25, 0.0),  # (percent infill, stepping stone height variation)
             (.375, 0.0),
             (.50, 0.0),
@@ -103,8 +103,8 @@ def generate_commands(args):
             "--ws", str(determine_ws_arg(id_)),
             "--data_dir", data_dir
         )
-
-        cmds.extend(generate_in_place_cmds(args, cmd_base))
+        if args.run_name[0] == "H":
+            cmds.extend(generate_in_place_cmds(args, cmd_base))
         cmds.extend(generate_training_reward_cmd(args, cmd_base))
         cmds.extend(generate_terrain_cmds(args, env_difficulties, cmd_base, id_))
     add_save_fname_arg(cmds)

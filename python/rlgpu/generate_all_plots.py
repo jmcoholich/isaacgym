@@ -28,7 +28,7 @@ def main():
 
     sota = {
         "Proposed Method" : "H ss state (0.2 rand new)",
-        # "End-to-end": "F ss state final",  # TODO
+        "End-to-end": "F ss state final",
     }
     args = get_args()
     if args.id:
@@ -62,8 +62,16 @@ def load_relevent_data(sota, args):
                 heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
                 infill = float(file_parts[file_parts.index("--ss_infill") + 1])
                 env_key = (infill, heightvar)
-            elif all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef"]):  # this is the special case for the flatground run
+            elif method == "Proposed Method" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
                 env_key = "flatground"
+                print(method)
+                print(file)
+                print()
+            elif method == "End-to-end" and all(x in file_parts for x in ["--no_ss"]):
+                env_key = "flatground"
+                print(method)
+                print(file)
+                print()
             else:
                 continue
 
