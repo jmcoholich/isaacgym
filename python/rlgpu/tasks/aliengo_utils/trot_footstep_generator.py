@@ -121,7 +121,7 @@ class TrotFootstepGenerator:
             device=self.device).view(1, full_rand_by_footstep_num, 1, 1)
         noise = (torch.rand_like(footsteps) - 0.5) * self.cfg['footstep_rand']
         noise[:, :full_rand_by_footstep_num] *= schedule
-        footsteps[:] += noise
+        footsteps[:] += noise * curr
         return footsteps
 
     def plot_footstep_targets(self, current_only=False):
