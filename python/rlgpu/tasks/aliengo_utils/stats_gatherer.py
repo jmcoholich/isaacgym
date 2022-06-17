@@ -41,7 +41,6 @@ class StatsGatherer:
             'foot_velocities',
             'trajectory_generator_phase',
             'foot_contact_binary',
-            'footstep_target_distance',
             'foot_contact_forces',
             'previous_action',
             'base_roll',
@@ -50,8 +49,12 @@ class StatsGatherer:
             'base_roll_velocity',
             'base_pitch_velocity',
             'base_yaw_velocity',
-            'footstep_generator_current_foot_one_hot',
         ]
+        if self.task.is_footsteps:
+            self.parts.append([
+                'footstep_generator_current_foot_one_hot',
+                "footstep_target_distance"
+            ])
 
     def init_data_storage(self, rew_dict):
         data = {"still_running": torch.zeros(self.max_episodes, self.task.cfg["termination"]["timeout"][0] + 2, 1, device=self.device),
