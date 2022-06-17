@@ -7,6 +7,7 @@ class TrotFootstepGenerator:
     """This is a class for generating footstep targets
     and keeping track of current footstep.
     """
+
     def __init__(self, task):
         self.device = task.device
 
@@ -65,9 +66,26 @@ class TrotFootstepGenerator:
         # dimensions are (envs, first two target pairs, two feet, xy)
         footsteps = torch.zeros(num_to_gen, 2, 2, 2, device=self.device)
         # each footstep is an x, y, z position
-        step_len = (self.cfg['step_length']
+
+        # ADD INFO FOR CURRICULUM!!
+        current_epoch = 0
+        if hasattr(self.task, "epochs"):
+            current_epoch = self.task.epochs
+        if self.task.args.max_iterations > 0:
+            max_epochs = self.task.args.max_iterations
+        else:
+            max_epochs = self.task.cfg['max_epochs']
+        curr = min(2.0 * current_epoch / max_epochs, 1.0)
+        step_len = (self.cfg['step_length'] * curr
                     + ((torch.rand(num_to_gen, device=self.device) - 0.5)
-                       * self.cfg['step_length_rand']))
+                       * self.cfg['step_length_rand'] * curr))
+
+
+        # step_len = (self.cfg['step_length']
+        #             + ((torch.rand(num_to_gen, device=self.device) - 0.5)
+        #                * self.cfg['step_length_rand']))
+
+
         # width = (self.cfg['step_width']
         #          + ((torch.rand(num_to_gen, device=self.device) - 0.5)
         #             * self.cfg['step_width_rand']))

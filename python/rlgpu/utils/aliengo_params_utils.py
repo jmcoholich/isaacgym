@@ -102,6 +102,8 @@ def detect_workstation_id():
 def aliengo_params_helper(cfg, cfg_train, args):
     """Populate fields in the cfg files to avoid having to change things in
     multiple places."""
+
+    cfg['env']['max_epochs'] = cfg_train['params']['config']['max_epochs']
     # I want to change the behavior of the rl_games player object if I am
     # in stats-gather mode
     if args.add_perturb != -1:
