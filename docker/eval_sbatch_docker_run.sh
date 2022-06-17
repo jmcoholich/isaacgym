@@ -4,7 +4,7 @@ wandb disabled
 cd /opt/isaacgym/python/rlgpu
 NUM_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 echo Number of GPUs: $NUM_GPUS
-$1
+eval $1
 
 wait
 echo All jobs are complete

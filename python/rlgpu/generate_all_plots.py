@@ -14,15 +14,6 @@ import itertools
 import os
 import pickle
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument("--id", type=str,
-                       help="This is the id of the run to evalute.")
-    group.add_argument("--run_name", type=str,
-                       help="If passed, eval all runs with this name.")
-    return parser.parse_args()
-
 
 def main():
 
@@ -42,6 +33,16 @@ def main():
     data = load_relevent_data(sota, args)
     generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument("--id", type=str,
+                       help="This is the id of the run to evalute.")
+    group.add_argument("--run_name", type=str,
+                       help="If passed, eval all runs with this name.")
+    return parser.parse_args()
 
 
 def load_relevent_data(sota, args):
