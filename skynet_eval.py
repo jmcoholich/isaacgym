@@ -6,8 +6,8 @@ Run python/rlgpu/evluate_policy.py on skynet in a docker container with
 import subprocess
 
 run_name = "H ss state (0.2 rand new)"
-job_nickname = "eval_" + run_name
-python_cmd = "python evaluate_policy.py --run_name='" + run_name + "' --debug"
+job_nickname = f"eval_{run_name}"
+python_cmd = f"python evaluate_policy.py --run_name='{run_name}' --debug"
 
 slurm_options = [
     "--cpus-per-gpu", "7",
