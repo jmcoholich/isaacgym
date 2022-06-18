@@ -8,16 +8,16 @@ third arg = name of runs
 """
 import subprocess
 
-num_runs = 3
-job_nickname = "ez_env_high_tau"
-python_cmd = "python rlg_train.py --tau 0.99 --cfg_env 12_H_ss_state_easier --cfg_train 12_large_net --wandb_project aliengo_12 --max_iterations 20000"
+num_runs = 5
+job_nickname = "five-k-curr"
+python_cmd = "python rlg_train.py --cfg_env 12_H --cfg_train 12_large_net --wandb_project aliengo_12"
 
 slurm_options = [
     "--cpus-per-gpu", "7",
-    "-p", "long",
-    "--constraint", "rtx_6000|a40",
+    "-p", "short",
+    "--constraint", "2080_ti",
     "--gres", "gpu:1",
-    "-x", " heistotron,cyborg,deebot,qt-1,robby,dave,omgwth",
+    "-x", "cortana",
 ]
 
 # loop through random seeds

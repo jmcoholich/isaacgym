@@ -39,7 +39,7 @@ RUN rm /usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0 /usr/lib/x86_64-linux-gnu/libE
 
 # python dependencies for gym
 RUN pip install -q -U \
-numpy-quaternion click tqdm sphinx sphinx-rtd-theme breathe pylama wandb seaborn matplotlib
+numpy-quaternion click tqdm sphinx sphinx-rtd-theme breathe pylama wandb seaborn matplotlib paramiko
 
 COPY isaacgym/docker/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 COPY isaacgym/docker/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
