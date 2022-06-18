@@ -51,7 +51,7 @@ class StatsGatherer:
             'base_yaw_velocity',
         ]
         if self.task.is_footsteps:
-            self.parts.append([
+            self.parts.extend([
                 'footstep_generator_current_foot_one_hot',
                 "footstep_target_distance"
             ])
