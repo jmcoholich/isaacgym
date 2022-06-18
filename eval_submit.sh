@@ -23,7 +23,7 @@ bash docker/eval_sbatch_run.sh "$1" $2 # this script needs to do all the work
 
 # Now move the data from SkyNet to my personal workstation
 DIR_NAME=$(python -c "print('$1'.replace(' ', '_').replace('(', '').replace(')', '').replace('.', ''))")_debug
-DATA_DIR="rlgpu/python/data/$DIR_NAME"
+DATA_DIR="python/rlgpu/data/$DIR_NAME"
 PWS_DIR="jcoholich@143.215.128.197:/home/jcoholich/isaacgym/python/rlgpu/data/$DIR_NAME"  # personal workstation directory
 echo Moving data from:
 echo $DATA_DIR
