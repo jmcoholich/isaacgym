@@ -5,7 +5,7 @@ cd /opt/isaacgym/python/rlgpu
 NUM_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 echo Number of GPUs: $NUM_GPUS
 echo $1
-python evaluate_policy.py --run_name="$1" --debug
+python evaluate_policy.py --run_name="$1"
 
 wait
 echo All jobs are complete
