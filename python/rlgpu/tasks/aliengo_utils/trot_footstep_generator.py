@@ -75,6 +75,7 @@ class TrotFootstepGenerator:
             max_epochs = self.task.args.max_iterations
         else:
             max_epochs = self.task.cfg['max_epochs']
+        max_epochs = 1000
         curr = min(2.0 * current_epoch / max_epochs, 1.0)
         step_len = (self.cfg['step_length'] * curr
                     + ((torch.rand(num_to_gen, device=self.device) - 0.5)
@@ -121,7 +122,7 @@ class TrotFootstepGenerator:
             device=self.device).view(1, full_rand_by_footstep_num, 1, 1)
         noise = (torch.rand_like(footsteps) - 0.5) * self.cfg['footstep_rand']
         noise[:, :full_rand_by_footstep_num] *= schedule
-        footsteps[:] += noise * curr
+        footsteps[:] += noise
         return footsteps
 
     def plot_footstep_targets(self, current_only=False):
