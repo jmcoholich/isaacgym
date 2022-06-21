@@ -17,6 +17,7 @@ NUM_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 # git checkout master
 # git pull origin master
 
+yes | docker system prune
 bash docker/build.sh $2
 docker rm isaacgym_container_$2
 bash docker/sbatch_run.sh "$1" $2 # this script needs to do all the work
