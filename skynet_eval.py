@@ -5,7 +5,7 @@ Run python/rlgpu/evluate_policy.py on skynet in a docker container with
 
 import subprocess
 
-run_name = "H curr"
+run_name = "H long steps curr 1k"
 job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower()
 # python_cmd = f"python evaluate_policy.py --run_name='{run_name}' --debug"
 python_cmd = run_name
@@ -13,9 +13,9 @@ python_cmd = run_name
 slurm_options = [
     "--cpus-per-gpu", "7",
     "-p", "short",
-    # "--constraint", "rtx_6000|a40",
+    "--constraint", "rtx_6000|a40",
     "--gres", "gpu:8",
-    "-x", "vicki",
+    "-x", "vicki, jill",
 ]
 
 # loop through random seeds

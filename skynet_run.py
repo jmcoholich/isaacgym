@@ -9,15 +9,15 @@ third arg = name of runs
 import subprocess
 
 num_runs = 5
-job_nickname = "five-k-curr"
-python_cmd = "python rlg_train.py --cfg_env 12_H --cfg_train 12_large_net --wandb_project aliengo_12"
+job_nickname = "h_curr_1k_5k_long_steps"
+python_cmd = "python rlg_train.py --cfg_env 12_H_long_steps --cfg_train 12_large_net --wandb_project aliengo_12"
 
 slurm_options = [
     "--cpus-per-gpu", "7",
     "-p", "short",
     "--constraint", "2080_ti",
     "--gres", "gpu:1",
-    "-x", "cortana",
+    "-x", "vincent",
 ]
 
 # loop through random seeds
