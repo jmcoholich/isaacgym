@@ -12,7 +12,15 @@ import torch
 import matplotlib.pyplot as plt
 import itertools
 import os
+import sys
 import pickle
+import io
+
+class CPU_Unpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if module == 'torch.storage' and name == '_load_from_bytes':
+            return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
+        else: return super().find_class(module, name)
 
 
 def main():
@@ -22,8 +30,6 @@ def main():
         "End-to-end": "F ss state final",
     }
     args = get_args()
-    if args.id:
-        raise NotImplementedError()
     random_id = str(torch.randint(1000000, (1,)).item())
     if not os.path.exists("plots"):
         os.makedirs("plots")
@@ -37,22 +43,25 @@ def main():
 
 def get_args():
     parser = argparse.ArgumentParser()
-    group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument("--id", type=str,
-                       help="This is the id of the run to evalute.")
-    group.add_argument("--run_name", type=str,
-                       help="If passed, eval all runs with this name.")
+    # group = parser.add_mutually_exclusive_group(required=False)
+    # group.add_argument("--id", type=str,
+    #                    help="This is the id of the run to evalute.")
+    parser.add_argument("--run_name", type=str,
+                       help="If passed, add this to plots in addition to H and F SOTA.")
     return parser.parse_args()
 
 
 def load_relevent_data(sota, args):
     """load data relevent to the main performance super plot"""
     names_to_analyze = sota
-    if args.run_name or args.id:
-        if args.run_name[0] == "H":
-            names_to_analyze["Proposed Method"] = args.run_name
+    if args.run_name:
+        names = args.run_name.split(',')
+        names = [name.rstrip().lstrip() for name in names]
+        if any(name in sota.values() for name in names):
+            raise ValueError("run_name is already in SOTA")
         else:
-            names_to_analyze["End-to-end"] = args.run_name
+            for name in names:
+                names_to_analyze[name] = name
 
     data = {}
 
@@ -70,9 +79,9 @@ def load_relevent_data(sota, args):
                 heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
                 infill = float(file_parts[file_parts.index("--ss_infill") + 1])
                 env_key = (infill, heightvar)
-            elif method == "Proposed Method" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
+            elif names_to_analyze[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
                 env_key = "flatground"
-            elif method == "End-to-end" and all(x in file_parts for x in ["--no_ss"]):
+            elif names_to_analyze[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
                 env_key = "flatground"
             elif len(file_parts) == 4:  # special case for getting training reward to normalize stats by
                 env_key = "training_rew"
@@ -86,7 +95,7 @@ def load_relevent_data(sota, args):
             temp = data[method][checkpoint][env_key]
 
             with open(os.path.join(data_dir, file), 'rb') as f:
-                x = pickle.load(f)
+                x = CPU_Unpickler(f).load()
                 temp["successful"] = x["succcessful"]
                 temp["reward"] = x["reward"].squeeze().sum(dim=1)
                 temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
@@ -228,7 +237,10 @@ def generate_sup_plot(data, sota, args):
             ax.set_title("Episode Length")
             ax.set_ylabel("Episode Length (timesteps)")
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc=(0.775, 0.9125))
+    if args.run_name:
+        fig.legend(handles, labels)
+    else:
+        fig.legend(handles, labels, loc=(0.775, 0.9125))
     # plt.show()
 
     # plt.title("3 random seeds,  30 rollouts each, 10k steps timeout, Error bars are std between seeds")
