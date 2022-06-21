@@ -81,7 +81,7 @@ def generate_commands(args):
 
     if args.run_name:
         ids = get_wandb_ids_from_run_name(args.run_name)
-        data_dir = "data/" + args.run_name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "")
+        data_dir = "data/" + args.run_name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "") + "dd_" + str(args.des_dir_coef)
         if args.debug:
             ids = ids[:2]
     else:

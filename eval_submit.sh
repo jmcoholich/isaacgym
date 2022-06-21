@@ -19,4 +19,4 @@ NUM_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 
 bash docker/build.sh $2
 docker rm isaacgym_container_$2
-time bash docker/eval_sbatch_run.sh "$1" $2 # this script needs to do all the work
+time bash docker/eval_sbatch_run.sh "$1" $2 $3 # this script needs to do all the work
