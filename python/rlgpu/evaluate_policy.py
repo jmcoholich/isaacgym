@@ -33,6 +33,8 @@ def get_args():
     parser.add_argument("--des_dir_coef", type=int, default=50,
                         help="Coefficient for directional term in "
                         "value-function footstep target optimiation")
+    parser.add_argument("--box_len", type=float, default=0.15,
+                        help="Size of search box in footstep optimization")
     return parser.parse_args()
 
 
@@ -157,6 +159,7 @@ def generate_terrain_cmds(args, env_difficulties, cmd_base, id_):
             cmd += ["--plot_values",
                     "--des_dir_coef", str(args.des_dir_coef),
                     "--des_dir", "0",
+                    "--box_len", str(args.box_len),
                     "--footstep_targets_in_place"]
         if infill is None:
             cmd += ["--no_ss"]
@@ -185,6 +188,7 @@ def generate_in_place_cmds(args, global_cmd_base):
             "--des_dir", str(direct),
             "--des_dir_coef", str(args.des_dir_coef),
             "--plot_values",
+            "--box_len", str(args.box_len),
         ])
 
     # stepping in place with random footstep selection
@@ -192,6 +196,7 @@ def generate_in_place_cmds(args, global_cmd_base):
         "--plot_values",
         "--random_footsteps",
         "--des_dir_coef", "0",
+        "--box_len", str(args.box_len),
     ])
 
     # stepping in place without optimization
