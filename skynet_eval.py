@@ -4,6 +4,7 @@ Run python/rlgpu/evluate_policy.py on skynet in a docker container with
 """
 
 import subprocess
+from skynet_run import get_blacklist
 
 for cf in [25, 50, 75, 100, 150, 200]:
     for bs in [0.15, 0.225, 0.3]:
@@ -21,7 +22,7 @@ for cf in [25, 50, 75, 100, 150, 200]:
             "-A", "overcap",
             "--constraint", "rtx_6000|a40",
             "--gres", "gpu:8",
-            "-x", "vicki, jill, shakey, kitt, megazord, uniblab, spd-13, tachikoma",
+            "-x", get_blacklist(),
             #"-w", "zima, sophon, claptrap"
         ]
 
