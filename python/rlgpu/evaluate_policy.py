@@ -132,6 +132,9 @@ def add_save_fname_arg(cmds):
 def determine_ws_arg(id):
     saved_ws = int(get_ws_from_run_id(id))  # workstation that the model file is saved on
     current_ws = int(detect_workstation_id())  # workstation that I'm running this script on
+    if current_ws == 7:  # NOTE I implemented this since making the skynet pipeline for eval and moving all model files onto skynet
+        # this is because I can only eval policies that are on skynet from skynet since I cannot easily ssh to another ws from inside a docker container.
+        return -1
     if saved_ws == current_ws:
         return -1  # this is the default for the ws arg
     else:
