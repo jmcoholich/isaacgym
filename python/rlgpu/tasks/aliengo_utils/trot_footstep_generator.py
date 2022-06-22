@@ -77,6 +77,7 @@ class TrotFootstepGenerator:
             max_epochs = self.task.cfg['max_epochs']
         max_epochs = 1000
         curr = min(2.0 * current_epoch / max_epochs, 1.0)
+        curr = 1.0  # NOTE this disables the curriculum
         step_len = (self.cfg['step_length'] * curr
                     + ((torch.rand(num_to_gen, device=self.device) - 0.5)
                        * self.cfg['step_length_rand'] * curr))
@@ -312,7 +313,7 @@ class TrotFootstepGenerator:
         This avoids indexing errors and prevents needing to generate
         a bogus observation on the last step."""
         # assert (self.current_footstep <= self.cfg['n_cycles'] * 4).all()
-        return self.current_footstep == (self.cfg['n_cycles'] + 1) * 2 - 1
+        return self.current_footstep == (self.cfg['n_cycles'] + 1) * 2 - 2
 
     def no_footstep_in(self, no_footstep_timeout):
         return (self.counter - self.last_time_hit_footstep) >= no_footstep_timeout
@@ -345,6 +346,53 @@ class TrotFootstepGenerator:
             output_idcs = output_idcs.view(self.num_envs, 4)
             output[self.env_arange.unsqueeze(-1), output_idcs] = \
                 dists.view(self.num_envs, 4)
+        return output
+
+    def get_footstep_target_distance_2_ahead(self):
+        """This is the observation that gets returned to the agent."""
+        yaw = self.task.base_euler[:, 2]
+        rot_mat = batch_z_2D_rot_mat(-yaw).view(self.num_envs, 1, 2, 2)
+        output = torch.zeros(self.num_envs, 12, device=self.device)
+        for i in range(2):
+            dists = self.get_footstep_pair_distance(self.current_footstep - i)
+            dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
+            foot_idcs = self.get_footstep_idcs(self.current_footstep - i)
+            output_idcs = (foot_idcs.unsqueeze(-1) * 2
+                           + torch.arange(2, device=self.device).view(1, 1, 2))
+            output_idcs = output_idcs.view(self.num_envs, 4)
+            output[self.env_arange.unsqueeze(-1), output_idcs] = \
+                dists.view(self.num_envs, 4)
+        i = -1
+        dists = self.get_footstep_pair_distance(self.current_footstep - i)
+        dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
+        # foot_idcs = self.get_footstep_idcs(self.current_footstep - i)
+        # output_idcs = (foot_idcs.unsqueeze(-1) * 2 + torch.arange(2, device=self.device).view(1, 1, 2))
+        # output_idcs = output_idcs.view(self.num_envs, 4)
+        output[:, 8:] = dists.view(self.num_envs, 4)
+        return output
+
+    def get_footstep_target_distance_2_ahead_alt(self):
+        """This is the observation that gets returned to the agent."""
+        yaw = self.task.base_euler[:, 2]
+        rot_mat = batch_z_2D_rot_mat(-yaw).view(self.num_envs, 1, 2, 2)
+        output = torch.zeros(self.num_envs, 16, device=self.device)
+        for i in range(2):
+            dists = self.get_footstep_pair_distance(self.current_footstep - i)
+            dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
+            foot_idcs = self.get_footstep_idcs(self.current_footstep - i)
+            output_idcs = (foot_idcs.unsqueeze(-1) * 2
+                           + torch.arange(2, device=self.device).view(1, 1, 2))
+            output_idcs = output_idcs.view(self.num_envs, 4)
+            output[self.env_arange.unsqueeze(-1), output_idcs] = \
+                dists.view(self.num_envs, 4)
+        i = -1
+        dists = self.get_footstep_pair_distance(self.current_footstep - i)
+        dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
+        foot_idcs = self.get_footstep_idcs(self.current_footstep - i)
+        output_idcs = (foot_idcs.unsqueeze(-1) * 2 + torch.arange(2, device=self.device).view(1, 1, 2))
+        output_idcs = output_idcs.view(self.num_envs, 4) + 8
+        output[self.env_arange.unsqueeze(-1), output_idcs] = \
+            dists.view(self.num_envs, 4)
         return output
 
     def get_current_foot_one_hot(self):

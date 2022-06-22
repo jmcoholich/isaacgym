@@ -41,6 +41,8 @@ class Observation():
             'trajectory_generator_phase': (self.get_tg_phase, 2, None),
             'foot_contact_binary': (self.get_foot_contact_binary, 4, None),
             'footstep_target_distance': (self.get_footstep_target_distance, 8, None),
+            'footstep_target_distance_2_ahead': (self.get_footstep_target_distance_2_ahead, 12, None),
+            'footstep_target_distance_2_ahead_alt': (self.get_footstep_target_distance_2_ahead_alt, 16, None),
             'high_level_foot': (self.get_high_level_foot, 4, None),
             'zero_step_token': (self.get_zero_step_token, 1, None),
             'one_step_token': (self.get_one_step_token, 1, None),
@@ -243,6 +245,16 @@ class Observation():
         # if self.ignore_footstep_targets:
         #     return torch.zeros(self.num_envs, 12, device=self.device)
         return self.task.footstep_generator.get_footstep_target_distance()
+
+    def get_footstep_target_distance_2_ahead(self):
+        # if self.ignore_footstep_targets:
+        #     return torch.zeros(self.num_envs, 12, device=self.device)
+        return self.task.footstep_generator.get_footstep_target_distance_2_ahead()
+
+    def get_footstep_target_distance_2_ahead_alt(self):
+        # if self.ignore_footstep_targets:
+        #     return torch.zeros(self.num_envs, 12, device=self.device)
+        return self.task.footstep_generator.get_footstep_target_distance_2_ahead_alt()
 
     def get_stepping_stone_state(self):
         if self.task.is_stepping_stones:
