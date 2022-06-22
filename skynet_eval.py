@@ -9,7 +9,7 @@ run_name = "H ss state (0.2 rand new)"  # SOTA
 #run_name = "H long steps curr 1k"
 des_dir_coef = 200  # default: 50
 search_box_len = 0.225  # default: 0.15
-job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower() + "dd_" + str(des_dir_coef) + "_bb_" + str(search_box_len)
+job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower() + "dd_" + str(des_dir_coef) + "_bb_" + str(search_box_len).replace(".", "_")
 # python_cmd = f"python evaluate_policy.py --run_name='{run_name}' --debug"
 python_cmd = run_name
 
