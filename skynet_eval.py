@@ -7,7 +7,8 @@ import subprocess
 
 run_name = "H long steps curr 1k"
 des_dir_coef = 50  # default: 50
-job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower() + "dd_" + str(des_dir_coef)
+search_box_len = 0.225  # default: 0.15
+job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower() + "dd_" + str(des_dir_coef) + "_bb_" + str(search_box_len)
 # python_cmd = f"python evaluate_policy.py --run_name='{run_name}' --debug"
 python_cmd = run_name
 
@@ -27,7 +28,7 @@ dep_slurm_args = [
     "-J", unique_name
 ]
 cmd = ["sbatch"] + slurm_options + dep_slurm_args + ["eval_submit.sh"] \
-    + [python_cmd] + [unique_name] + [des_dir_coef]
+    + [python_cmd] + [unique_name] + [des_dir_coef] + [search_box_len]
 print(" ".join(cmd))
 print()
 subprocess.run(cmd)

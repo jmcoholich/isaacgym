@@ -7,12 +7,12 @@ docker run \
     --cpuset-cpus="$(taskset -c -p $$ | cut -f2 -d ':' | awk '{$1=$1};1')" \
     --name isaacgym_container_$2 \
     --mount type=bind,source=/nethome/jcoholich3/isaacgym/python/rlgpu/data,destination=/opt/isaacgym/python/rlgpu/data/ \
-    isaacgym_$2 /opt/isaacgym/docker/eval_sbatch_docker_run.sh "$1" $3
+    isaacgym_$2 /opt/isaacgym/docker/eval_sbatch_docker_run.sh "$1" $3 $4
 
 echo Finished evaluation run, copying data now
 
 # Now move the data from SkyNet to my personal workstation
-DIR_NAME=$(python -c "print('$1'.replace(' ', '_').replace('(', '').replace(')', '').replace('.', '') + 'dd_' + '$3')")
+DIR_NAME=$(python -c "print('$1'.replace(' ', '_').replace('(', '').replace(')', '').replace('.', '') + 'dd_' + '$3' + '_bb_' + '$4')")
 DATA_DIR="python/rlgpu/data/$DIR_NAME"
 PWS_DIR="jcoholich@143.215.128.197:/home/jcoholich/isaacgym/python/rlgpu/data/"  # personal workstation directory
 echo Moving data from:
