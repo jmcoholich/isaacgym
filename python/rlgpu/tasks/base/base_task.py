@@ -126,6 +126,12 @@ class BaseTask():
 
         return sim
 
+    def simulate(self):
+        self.gym.simulate(self.sim)
+
+    def fetch(self):
+        self.gym.fetch_results(self.sim, True)
+
     def step(self, actions):
         if self.dr_randomizations.get('actions', None):
             actions = self.dr_randomizations['actions']['noise_lambda'](actions)
@@ -136,11 +142,11 @@ class BaseTask():
         # step physics and render each frame
         for i in range(self.control_freq_inv):
             self.render()
-            self.gym.simulate(self.sim)
+            self.simulate()
 
         # # to fix!
         # if self.device == 'cpu':
-        self.gym.fetch_results(self.sim, True)
+        self.fetch()
 
         # compute observations, rewards, resets, ...
         self.post_physics_step()
