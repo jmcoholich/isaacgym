@@ -3,6 +3,7 @@ import torch
 import sys
 import os
 import pickle
+import gzip
 
 class StatsGatherer:
     def __init__(self, task, max_episodes):
@@ -99,12 +100,12 @@ class StatsGatherer:
         if not os.path.exists(data_dir):
             os.mkdir(data_dir)
 
-        path = os.path.join(data_dir, self.task.args.save_fname.replace("/", "") + ".pkl")
+        path = os.path.join(data_dir, self.task.args.save_fname.replace("/", "") + ".pgz")
         # if not os.path.exists(data_dir):
         #     os.makedirs(data_dir)
-        with open(path, 'wb') as f:
+        with gzip.GzipFile(path, 'w') as f:
             print(f"Writing gathered data to: {path}")
-            pickle.dump(self.data, f)
+            pickle.dump(self.data, f, protocol=4)
             print(f"done")
 
     def log_final_stuff(self, just_terminated):

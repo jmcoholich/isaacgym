@@ -3,6 +3,8 @@
 *.svg
 *.pkl
 *.pt
+*.pgz
+*.pbz2
 python/rlgpu/logs/
 *.pyc
 # Byte-compiled / optimized / DLL files

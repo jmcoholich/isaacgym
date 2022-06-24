@@ -158,7 +158,7 @@ def make_footstep_plots():
             last_footstep = np.zeros((4, 2))
             for i in range(min(x["current_footstep"].min(), max_footstep_traj_len)):
                 # if i % 2 == 0:
-                    # color = torch.rand(1, 3)
+                # color = torch.rand(1, 3)
                 for j in range(2):
                     temp = footsteps[:, i, j]
                     x = -temp[..., 1].mean().cpu()

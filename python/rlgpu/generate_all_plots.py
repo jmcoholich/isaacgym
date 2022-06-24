@@ -15,6 +15,7 @@ import os
 import sys
 import pickle
 import io
+import gzip
 
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
@@ -71,7 +72,7 @@ def load_relevent_data(sota, args):
         all_files = os.listdir(data_dir)
         relevant_files = []
         for file in all_files:
-            if file[-3:] == "pkl":
+            if file[-3:] == "pgz":
                 relevant_files.append(file)
         for file in relevant_files:
             file_parts = file[5:-4].split("__")
@@ -94,7 +95,8 @@ def load_relevent_data(sota, args):
             data[method][checkpoint][env_key] = {}
             temp = data[method][checkpoint][env_key]
 
-            with open(os.path.join(data_dir, file), 'rb') as f:
+            # with open(os.path.join(data_dir, file), 'rb') as f:
+            with gzip.GzipFile(os.path.join(data_dir, file), 'r') as f:
                 x = CPU_Unpickler(f).load()
                 temp["successful"] = x["succcessful"]
                 temp["reward"] = x["reward"].squeeze().sum(dim=1)
