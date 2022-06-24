@@ -2,10 +2,11 @@ import pickle
 import os
 import sys
 import torch
+from generate_all_plots import CPU_Unpickler
 
 def main():
-    prefix = "/home/jcoholich/isaacgym/python/rlgpu/data/H_ss_state_02_rand_newdd_200_bb_0_225"
-    fname = "data_--checkpoint__220224123057801520__--timeout__5000__--plot_values__--des_dir_coef__200__--des_dir__0__--box_len__0.225__--footstep_targets_in_place__--add_ss__--ss_infill__1.0__--ss_height_var__0.1.pkl"
+    prefix = "data/H_curr_long_steps"
+    fname = "data_--checkpoint__220617220458137766__--timeout__5000__--plot_values__--des_dir_coef__50__--des_dir__0__--footstep_targets_in_place__--add_ss__--ss_infill__1.0__--ss_height_var__0.1.pkl"
 
     path = os.path.join(prefix, fname)
 
@@ -13,19 +14,20 @@ def main():
     print(f"Size of file on disk {prev_size / 10**6 :.2f} Mb")
 
     with open(path, 'rb') as f:
-        data = pickle.load(f)
+        # data = pickle.load(f)
+        data = CPU_Unpickler(f).load()
 
     full_size = get_size(data)
     print(f"Size of unpickled file {full_size / 10**6 :.2f} Mb")
 
     new_pkl_location = "/home/jcoholich/isaacgym/python/rlgpu"
-    test_fname = "pickle_test_file.pkl"
-    new_path = os.path.join(new_pkl_location, test_fname)
-    with open(new_path, 'wb') as f:
-        pickle.dump(data, f, protocol=5)
-
-    new_size = os.path.getsize(new_path)
-    print(f"New size of file on disk {new_size / 10**6 :.2f} Mb")
+    for prot in range(6):
+        test_fname = "pickle_test_file.pkl"
+        new_path = os.path.join(new_pkl_location, test_fname)
+        with open(new_path, 'wb') as f:
+            pickle.dump(data, f, protocol=prot)
+        new_size = os.path.getsize(new_path)
+        print(f"File size with protocol {prot}: {new_size / 10**6 :.2f} Mb")
 
 
 
