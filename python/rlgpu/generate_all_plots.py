@@ -16,6 +16,8 @@ import sys
 import pickle
 import io
 import gzip
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
 
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
@@ -37,7 +39,17 @@ def main():
     save_dir = os.path.join("plots", random_id)
     os.mkdir(save_dir)
     args.save_dir = save_dir
-    data = load_relevent_data(sota, args)
+    # s = time.time()
+    # data = load_relevent_data(sota, args)
+    e = time.time()
+    # print(f"Serial loading took {e - s :.2f} seconds")
+    sota = {
+        "Proposed Method" : "H ss state (0.2 rand new)",
+        "End-to-end": "F ss state final",
+    }
+    data = parallel_load_relevent_data(sota, args)
+    print(f"Parallel loading took {time.time() - e :.2f} seconds")
+    sys.exit()
     generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
 
@@ -136,6 +148,114 @@ def load_relevent_data(sota, args):
                 # print("\n")
 
     return data
+
+def parallel_load_relevent_data(sota, args):
+    """load data relevent to the main performance super plot"""
+    names_to_analyze = sota
+    if args.run_name:
+        names = args.run_name.split(',')
+        names = [name.rstrip().lstrip() for name in names]
+        if any(name in sota.values() for name in names):
+            raise ValueError("run_name is already in SOTA")
+        else:
+            for name in names:
+                names_to_analyze[name] = name
+
+    # first populate the data
+    data = {}
+    futures = []
+    with ThreadPoolExecutor() as executor:
+        # future = executor.submit(pow, 323, 1235)
+        # print(future.result())
+
+        for method in names_to_analyze:
+            data[method] = {}
+            data_dir = os.path.join("data", names_to_analyze[method].replace(" ", "_").replace("(", "").replace(")", "").replace(".", ""))
+            all_files = os.listdir(data_dir)
+            relevant_files = []
+            for file in all_files:
+                if file[-3:] == "pgz":
+                    relevant_files.append(file)
+            for file in relevant_files:
+                file_parts = file[5:-4].split("__")
+                if "--ss_height_var" in file_parts:
+                    heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
+                    infill = float(file_parts[file_parts.index("--ss_infill") + 1])
+                    env_key = (infill, heightvar)
+                elif names_to_analyze[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
+                    env_key = "flatground"
+                elif names_to_analyze[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
+                    env_key = "flatground"
+                elif len(file_parts) == 4:  # special case for getting training reward to normalize stats by
+                    env_key = "training_rew"
+                else:
+                    continue
+
+                checkpoint = file_parts[file_parts.index("--checkpoint") + 1]
+                if checkpoint not in data[method]:
+                    data[method][checkpoint] = {}
+                data[method][checkpoint][env_key] = {}
+
+
+
+                path = os.path.join(data_dir, file)
+                futures.append(executor.submit(_load_and_process_data, path, method, checkpoint, env_key))
+        '''
+            with gzip.GzipFile(os.path.join(data_dir, file), 'r') as f:
+                x = CPU_Unpickler(f).load()
+            temp["successful"] = x["succcessful"]
+            temp["reward"] = x["reward"].squeeze().sum(dim=1)
+            temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
+            idx = temp["eps_len"] - 1
+            temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0] '''
+
+                    # common_footstep = x["current_footstep"].min().item()
+                    # num_runs = x["still_running"].shape[0]
+                    # rews_sum = 0.0
+                    # for i in range(num_runs):
+                    #     rews_sum += x["reward"][i, :termination_idcs[i], 0].sum()
+
+                    # if is_random:
+                    #     key = "random"
+                    # elif is_optim:
+                    #     key = "optim"
+                    # else:
+                    #     key = "in_place"
+                    # data[checkpoint][key] = {}
+                    # data[checkpoint][key]["Average rew per timestep"] = (rews_sum / termination_idcs.sum()).item()
+                    # data[checkpoint][key]["Average rew per footstep"] = (rews_sum / x['current_footstep'].sum()).item()
+                    # data[checkpoint][key]["Average rew per rollout"] = (rews_sum / num_runs).item()
+                    # data[checkpoint][key]["Average rollout length"] = (termination_idcs.float().mean()).item()
+                    # data[checkpoint][key]["Average footstep reached"] = (x['current_footstep'].float().mean()).item()
+                    # data[checkpoint][key]["Average timesteps per footstep"] = (termination_idcs.float().sum() / x['current_footstep'].float().sum()).item()
+
+                    # print(file)
+                    # for k, v in data[checkpoint][key].items():
+                    #     print(f"{k}: {v :0.2f}")
+                    # # print(f"Average rew per timestep: {rews_sum / termination_idcs.sum() :.3f}")
+                    # # print(f"Average rew per footstep: {rews_sum / x['current_footstep'].sum() :.2f}")
+                    # # print(f"Average rew per rollout: {rews_sum / num_runs :.2f}")
+                    # # print(f"Average rollout length: {termination_idcs.float().mean() :.1f}")
+                    # # print(f"Average footstep reached: {x['current_footstep'].float().mean() :.1f}")
+                    # # print(f"Average timesteps per footstep: {termination_idcs.float().sum() / x['current_footstep'].float().sum() :.1f}")
+                    # print("\n")
+        for future in as_completed(futures):
+            output, method, checkpoint, env_key = future.result()
+            data[method][checkpoint][env_key] = output
+
+    return data
+
+
+def _load_and_process_data(path, method, checkpoint, env_key):
+    output = {}
+    with gzip.GzipFile(path, 'r') as f:
+        x = CPU_Unpickler(f).load()
+    output["successful"] = x["succcessful"]
+    output["reward"] = x["reward"].squeeze().sum(dim=1)
+    output["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
+    idx = output["eps_len"] - 1
+    output["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
+    return output, method, checkpoint, env_key
 
 
 def avg_across_seeds(data, metric, floats=False):
@@ -240,7 +360,7 @@ def generate_sup_plot(data, sota, args):
             ax.set_ylabel("Episode Length (timesteps)")
     handles, labels = ax.get_legend_handles_labels()
     if args.run_name:
-        fig.legend(handles, labels)
+        fig.legend(handles, labels, bbox_to_anchor=(1.25, 0.9))
     else:
         fig.legend(handles, labels, loc=(0.775, 0.9125))
     # plt.show()
