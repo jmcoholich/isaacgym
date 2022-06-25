@@ -43,10 +43,10 @@ def main():
     # data = load_relevent_data(sota, args)
     e = time.time()
     # print(f"Serial loading took {e - s :.2f} seconds")
-    sota = {
-        "Proposed Method" : "H ss state (0.2 rand new)",
-        "End-to-end": "F ss state final",
-    }
+    # sota = {
+    #     "Proposed Method" : "H ss state (0.2 rand new)",
+    #     "End-to-end": "F ss state final",
+    # }
     data = parallel_load_relevent_data(sota, args)
     print(f"Parallel loading took {time.time() - e :.2f} seconds")
     sys.exit()
@@ -110,11 +110,11 @@ def load_relevent_data(sota, args):
             # with open(os.path.join(data_dir, file), 'rb') as f:
             with gzip.GzipFile(os.path.join(data_dir, file), 'r') as f:
                 x = CPU_Unpickler(f).load()
-                temp["successful"] = x["succcessful"]
-                temp["reward"] = x["reward"].squeeze().sum(dim=1)
-                temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
-                idx = temp["eps_len"] - 1
-                temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
+            temp["successful"] = x["succcessful"]
+            temp["reward"] = x["reward"].squeeze().sum(dim=1)
+            temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
+            idx = temp["eps_len"] - 1
+            temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
 
                 # common_footstep = x["current_footstep"].min().item()
                 # num_runs = x["still_running"].shape[0]
