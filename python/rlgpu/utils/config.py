@@ -401,6 +401,9 @@ def get_args(benchmark=False, use_rlg_config=False):
         {"name": "--stop_after_footstep", "type": int, "default": -1,
             "help": "If passed, sim terminates after all envs hit this number"
             " of footsteps, then saves self.footstep_generator.footsteps."},
+        {"name": "--curriculum_length", "type": int, "default": -1,
+            "help": "If passed, footstep difficulty increases linearly up"
+            "until this policy iteration number"},
         {"name": "--finetune_value", "type": str, "default": None,
             "help": "Takes run_id as argument. This will load the saved run"
             "and change hyperparameters such that only the value function"

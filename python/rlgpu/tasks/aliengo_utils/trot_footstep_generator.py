@@ -71,13 +71,11 @@ class TrotFootstepGenerator:
         current_epoch = 0
         if hasattr(self.task, "epochs"):
             current_epoch = self.task.epochs
-        if self.task.args.max_iterations > 0:
-            max_epochs = self.task.args.max_iterations
+        if self.task.cfg["curriculum_length"] != -1:
+            max_epochs = self.task.cfg["curriculum_length"]
+            curr = min(current_epoch / max_epochs, 1.0)
         else:
-            max_epochs = self.task.cfg['max_epochs']
-        max_epochs = 1000
-        curr = min(2.0 * current_epoch / max_epochs, 1.0)
-        curr = 1.0  # NOTE this disables the curriculum
+            curr = 1.0  # NOTE this disables the curriculum
         step_len = (self.cfg['step_length'] * curr
                     + ((torch.rand(num_to_gen, device=self.device) - 0.5)
                        * self.cfg['step_length_rand'] * curr))
