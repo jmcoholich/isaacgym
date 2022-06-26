@@ -49,7 +49,7 @@ def main():
     # }
     data = parallel_load_relevent_data(sota, args)
     print(f"Parallel loading took {time.time() - e :.2f} seconds")
-    sys.exit()
+    # sys.exit()
     generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
 
