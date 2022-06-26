@@ -126,7 +126,7 @@ class Observation():
     def get_footstep_obs_start_idx(self):
         output = 0
         for part in self.parts:
-            if part == "footstep_target_distance":
+            if part[:24] == "footstep_target_distance":
                 return output
             if self.handles[part][1] == 0:
                 raise ValueError("Variable-length observation item encountered."
