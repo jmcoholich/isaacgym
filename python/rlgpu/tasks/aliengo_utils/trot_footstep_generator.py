@@ -287,6 +287,15 @@ class TrotFootstepGenerator:
         rew_dict["foot_velocity"] = self.velocity_towards_footsteps()
         return rew_dict, hit_both
 
+    def update_next_next_targets(self):
+        """The next next targets should be at the location of the shoulder
+        joints plus some delta in the des_dir_direction."""
+        x_offset = 0.2
+        idcs = self.get_footstep_idcs(self.current_footstep - 1)
+        hip_pos = self.task.hip_pos[self.env_arange.unsqueeze(-1), idcs, :2]
+        hip_pos[:, :, 0] += x_offset
+        self.footsteps[self.env_arange, self.current_footstep + 1] = hip_pos
+
     def update(self):
         """Calculate rewards and store them for later, since the observation
         needs to reflect the next footstep target if the current target is
@@ -298,6 +307,9 @@ class TrotFootstepGenerator:
         self.last_time_hit_footstep[hit_targets] = \
             self.counter[hit_targets].clone()
         self.counter += 1
+
+        if self.task.args.two_ahead_opt:
+            self.update_next_next_targets()
 
         if self.rand_every_timestep:
             self.rand_next_footstep()

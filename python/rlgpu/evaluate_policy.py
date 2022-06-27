@@ -109,8 +109,17 @@ def generate_commands(args):
             cmds.extend(generate_in_place_cmds(args, cmd_base))
         cmds.extend(generate_training_reward_cmd(args, cmd_base))
         cmds.extend(generate_terrain_cmds(args, env_difficulties, cmd_base, id_))
+    configure_two_ahead_opt(cmds, args)
     add_save_fname_arg(cmds)
     return cmds
+
+
+def configure_two_ahead_opt(cmds, args):
+    if "ahead" in args.run_name:
+        for cmd in cmds:
+            if "--plot_values" in cmd:
+                cmd.append("--two_ahead_opt")
+
 
 def add_save_fname_arg(cmds):
     uninformative_args = {"--num_envs", "--gather_stats", "--ws", "--data_dir", "python", "--start_after"}

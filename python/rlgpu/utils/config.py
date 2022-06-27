@@ -407,6 +407,8 @@ def get_args(benchmark=False, use_rlg_config=False):
         {"name": "--adaptive_curriculum", "type": float, "default": -1,
             "help": "If passed, this is the amount the step the adative curriculum"
             "by each time"},
+        {"name": "--two_ahead_opt", "action": "store_true",
+            "help": "Enable optimization for 2 ahead obs"},
         {"name": "--finetune_value", "type": str, "default": None,
             "help": "Takes run_id as argument. This will load the saved run"
             "and change hyperparameters such that only the value function"
