@@ -131,7 +131,10 @@ class TrotFootstepGenerator:
         return footsteps
 
     def plot_footstep_targets(self, current_only=False):
-        hit_so_far = True
+        hit_so_far = self.task.args.plot_values
+        plot_next_next = (self.task.args.plot_values
+            and 'footstep_target_distance' not in self.task.observe.parts)  # if we are doing 2 ahead
+
         if self.task.is_stepping_stones:
             add_height = self.task.cfg['stepping_stones']['height']
         elif self.task.is_rough_terrain_blocks:
@@ -150,6 +153,14 @@ class TrotFootstepGenerator:
             centers = torch.cat((centers, torch.zeros(num, 2, 1, device=self.device)), -1)
             centers[:, :, 2] += add_height
             vertices, colors = get_circle_lines(centers.reshape(num * 2, 3), foot_colors=True)
+            if plot_next_next:
+                centers = self.footsteps[0, num: num + 1]
+                centers = torch.cat((centers, torch.zeros(1, 2, 1, device=self.device)), -1)
+                centers[:, :, 2] += add_height
+                stack_height = 25
+                temp_vertices, temp_colors = get_circle_lines(centers.reshape(2, 3), stack_height=stack_height)
+                vertices = torch.cat([vertices, temp_vertices])
+                colors = torch.cat([colors, temp_colors])
         elif current_only:
             centers = self.footsteps[0, self.current_footstep[0] - 1:self.current_footstep[0] + 1]
             centers = torch.cat((centers, torch.zeros(2, 2, 1, device=self.device)), -1)
@@ -407,31 +418,33 @@ class TrotFootstepGenerator:
 
 
 
-def get_circle_lines(centers, radius=0.02, rand_colors=False, foot_colors=False):
+def get_circle_lines(centers, radius=0.02, rand_colors=False, foot_colors=False, stack_height=1):
+    stack_delta = 0.01
+    num_lines = int(radius / 0.01) * 5  # this is per circle
     foot_rgb = torch.tensor([[0.5, 0.0, 0.0], [0.0, 0.5, 0.0],
-                             [0.0, 0.0, 0.5], [0.5, 0.5, 0.0]])
+                            [0.0, 0.0, 0.5], [0.5, 0.5, 0.0]])
     height = 0.01
-    num_lines = int(radius / 0.01) * 5
     num_circles = centers.shape[0]
 
     # axes mean (centers, num_lines, start/end point, xyz position)
-    lines = torch.zeros(num_circles, num_lines, 2, 3, device=centers.device)
-    lines[:, :, :, 2] = centers[:, 2].view(num_circles, 1, 1) + height  # set height of all lines
+    lines = torch.zeros(stack_height, num_circles, num_lines, 2, 3, device=centers.device)
+    lines[:, :, :, :, 2] = centers[:, 2].view(1, num_circles, 1, 1) + height + torch.arange(stack_height, device=centers.device).reshape(stack_height, 1, 1, 1) * stack_delta  # set height of all lines
     x_center_offset = radius * 2 * ((torch.arange(num_lines, device=centers.device) + 1) / (num_lines + 1)) - radius
-    lines[:, :, :, 0] = centers[:, 0].view(num_circles, 1, 1) + x_center_offset.view(1, num_lines, 1)
+    lines[:, :, :, :, 0] = centers[:, 0].view(1, num_circles, 1, 1) + x_center_offset.view(1, 1, num_lines, 1)
     temp = (radius**2 - x_center_offset**2)**0.5
-    lines[:, :, 0, 1] = centers[:, 1].view(num_circles, 1) + temp.view(1, num_lines)
-    lines[:, :, 1, 1] = centers[:, 1].view(num_circles, 1) - temp.view(1, num_lines)
+    lines[:, :, :, 0, 1] = centers[:, 1].view(1, num_circles, 1) + temp.view(1, 1, num_lines)
+    lines[:, :, :, 1, 1] = centers[:, 1].view(1, num_circles, 1) - temp.view(1, 1, num_lines)
 
-    colors = torch.zeros(num_circles, num_lines, 3)
+    colors = torch.zeros(stack_height, num_circles, num_lines, 3, device=centers.device)
     if rand_colors:
-        colors[:] = torch.rand(num_circles, 1, 3)
+        colors[:] = torch.rand(1, num_circles, 1, 3)
     elif foot_colors:
         for i in range(4):
-            colors[i::4] = foot_rgb[i]
+            colors[:, i::4] = foot_rgb[i]
     else:
         colors[:] = torch.tensor([1.0, 0.0, 0.0])
-    lines = lines.reshape(num_circles * num_lines * 2, 3)
+    colors = colors.reshape(stack_height * num_circles, num_lines, 3)
+    lines = lines.reshape(stack_height * num_circles * num_lines * 2, 3)
     return lines, colors
 
 
