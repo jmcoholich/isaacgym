@@ -75,6 +75,7 @@ env:
     # foot_lift_penalty: [0.125]
     # foot_lift_penalty_smooth: [0.125]
     current_footstep_for_logging: [None] # this is purely just for logging, using the structure I already set up
+    curriculum_param_for_logging: [None]
     smoothness: [0.03125]
     slip_penalty: [0.0625]
     foot_lift: [0.25]

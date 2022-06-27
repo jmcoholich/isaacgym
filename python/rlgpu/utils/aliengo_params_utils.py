@@ -103,6 +103,8 @@ def aliengo_params_helper(cfg, cfg_train, args):
     """Populate fields in the cfg files to avoid having to change things in
     multiple places."""
     cfg['env']['curriculum_length'] = args.curriculum_length
+    if args.curriculum_length != -1:
+        assert args.adaptive_curriculum == -1
 
     cfg['env']['max_epochs'] = cfg_train['params']['config']['max_epochs']
     # I want to change the behavior of the rl_games player object if I am

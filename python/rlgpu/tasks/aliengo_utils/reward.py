@@ -23,6 +23,7 @@ class Reward():
             # 'foot_lift_penalty': self.foot_lift_penalty,
             # 'foot_lift_penalty_smooth': self.foot_lift_penalty_smooth,
             'current_footstep_for_logging': self.current_footstep_for_logging,
+            'curriculum_param_for_logging': self.curriculum_param_for_logging,
             'smoothness': self.smoothness,
             'foot_smooth': self.foot_smooth,
             'base_smooth': self.base_smooth,
@@ -167,6 +168,10 @@ class Reward():
     def current_footstep_for_logging(self, ignore):
         current_footstep = self.task.footstep_generator.current_footstep.float()
         return torch.zeros(self.num_envs, device=self.device), current_footstep
+
+    def curriculum_param_for_logging(self, ignore):
+        temp = torch.ones(self.num_envs, device=self.device) * self.task.footstep_generator.curr
+        return torch.zeros(self.num_envs, device=self.device), temp
 
 
     # def joint_torques_sq(self, k):

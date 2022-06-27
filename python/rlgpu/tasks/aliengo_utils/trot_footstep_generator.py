@@ -38,6 +38,7 @@ class TrotFootstepGenerator:
         self.num_envs = task.num_envs
         self.current_footstep = torch.ones(self.num_envs, dtype=torch.long,
                                            device=self.device)
+        self.curr = self.curriculum()
         self.vis = not self.task.headless  # TODO make sure its not just this preventing me from rendering to vid with headless
         # self.n_foosteps_hit = None
         if self.vis:
@@ -54,6 +55,21 @@ class TrotFootstepGenerator:
         self.last_time_hit_footstep = torch.zeros(self.num_envs,
                                                   device=self.device)
 
+    def curriculum(self):
+        current_epoch = 0
+        if hasattr(self.task, "epochs"):
+            current_epoch = self.task.epochs
+
+        if self.task.args.adaptive_curriculum != -1 and self.task.wandb_log_counter % self.task.cfg["steps_num"]:  # I only want to adjust when an epoch is calculated.
+            if self.current_footstep.float().mean() >= 10:
+                self.curr += self.task.adaptive_curriculum
+                self.curr = min(self.curr, 1.0)
+        if self.task.cfg["curriculum_length"] != -1:
+            max_epochs = self.task.cfg["curriculum_length"]
+            return min(current_epoch / max_epochs, 1.0)
+        else:
+            return 1.0  # NOTE this disables the curriculum
+
     def generate_footsteps(self, env_ids):
         """Stochastically generate footsteps for a trotting gait.
         FR and RL will be first up for hitting targets.
@@ -66,19 +82,9 @@ class TrotFootstepGenerator:
         # dimensions are (envs, first two target pairs, two feet, xy)
         footsteps = torch.zeros(num_to_gen, 2, 2, 2, device=self.device)
         # each footstep is an x, y, z position
-
-        # ADD INFO FOR CURRICULUM!!
-        current_epoch = 0
-        if hasattr(self.task, "epochs"):
-            current_epoch = self.task.epochs
-        if self.task.cfg["curriculum_length"] != -1:
-            max_epochs = self.task.cfg["curriculum_length"]
-            curr = min(current_epoch / max_epochs, 1.0)
-        else:
-            curr = 1.0  # NOTE this disables the curriculum
-        step_len = (self.cfg['step_length'] * curr
+        step_len = (self.cfg['step_length'] * self.curr
                     + ((torch.rand(num_to_gen, device=self.device) - 0.5)
-                       * self.cfg['step_length_rand'] * curr))
+                       * self.cfg['step_length_rand'] * self.curr))
 
 
         # step_len = (self.cfg['step_length']
@@ -275,7 +281,7 @@ class TrotFootstepGenerator:
         needs to reflect the next footstep target if the current target is
         hit. However, rewards need to reflect the last action and observation.
         """
-
+        self.curr = self.curriculum()
         self.rew_dict, hit_targets = self.compute_rewards()
         self.current_footstep[hit_targets] += 1
         self.last_time_hit_footstep[hit_targets] = \
