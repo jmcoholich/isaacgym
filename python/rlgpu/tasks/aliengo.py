@@ -42,6 +42,7 @@ class Aliengo(BaseTask):
         self.device_type = cfg.get("device_type", "cuda")
         self.device_id = cfg.get("device_id", 0)
 
+        self.wandb_log_counter = 0
         self.device = "cpu"
         if self.device_type == "cuda" or self.device_type == "GPU":
             self.device = "cuda" + ":" + str(self.device_id)
@@ -176,7 +177,6 @@ class Aliengo(BaseTask):
                                    prev_obs_stacking=self.cfg["prev_obs_stacking"])
         self.reward = Reward(self.cfg["reward"], self)
         self.terminations = Terminiations(self, self.cfg["termination"])
-        self.wandb_log_counter = 0
         self.epochs = 0
         if self.cfg["actionSpace"] == 'high_level':
             self.low_level_policy = LowLevelNetwork(self, play=self.args.play)
