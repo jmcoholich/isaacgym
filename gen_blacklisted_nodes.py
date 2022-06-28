@@ -19,6 +19,7 @@ def main():
         print(f"checking node {node}")
         if any(not check(node) for check in checks):
             blacklist.append(node)
+    blacklist.sort()
     print("blacklist obtained", blacklist)
     write_blist(blacklist)
     print(f"total time: {(time.time()-s)/60.0 :.2f} min")

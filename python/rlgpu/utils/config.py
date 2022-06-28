@@ -409,6 +409,12 @@ def get_args(benchmark=False, use_rlg_config=False):
             "by each time"},
         {"name": "--two_ahead_opt", "action": "store_true",
             "help": "Enable optimization for 2 ahead obs"},
+        {"name": "--nn_ft_dist", "type": float, "default": 0.2,
+            "help": "Distance that the next next footstep targets are"
+         " placed ahead of the hip joints when doing --two_ahead_opt"},
+        {"name": "--nn_ft_width", "type": float, "default": 0.0,
+            "help": "Additional width added to the next next footstep"
+         " targets when doing --two_ahead_opt"},
         {"name": "--finetune_value", "type": str, "default": None,
             "help": "Takes run_id as argument. This will load the saved run"
             "and change hyperparameters such that only the value function"

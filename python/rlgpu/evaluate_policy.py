@@ -35,6 +35,12 @@ def get_args():
                         "value-function footstep target optimiation")
     parser.add_argument("--box_len", type=float, default=0.15,
                         help="Size of search box in footstep optimization")
+    parser.add_argument("--nn_ft_dist", type=float, default=0.2,
+                        help="Distance that the next next footstep targets are"
+                        " placed ahead of the hip joints when doing --two_ahead_opt")
+    parser.add_argument("--nn_ft_width", type=float, default=0.0,
+                        help="Additional width added to the next next footstep"
+                        " targets when doing --two_ahead_opt")
     return parser.parse_args()
 
 
@@ -115,10 +121,11 @@ def generate_commands(args):
 
 
 def configure_two_ahead_opt(cmds, args):
-    if "ahead" in args.run_name:
+    # if "ahead" in args.run_name:
+    if True:  # TODO
         for cmd in cmds:
             if "--plot_values" in cmd:
-                cmd.append("--two_ahead_opt")
+                cmd.extend(["--two_ahead_opt", "--nn_ft_dist", str(args.nn_ft_dist), "--nn_ft_width", str(args.nn_ft_width)])
 
 
 def add_save_fname_arg(cmds):

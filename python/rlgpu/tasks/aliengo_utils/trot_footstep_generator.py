@@ -292,8 +292,17 @@ class TrotFootstepGenerator:
         joints plus some delta in the des_dir_direction."""
         x_offset = 0.2
         idcs = self.get_footstep_idcs(self.current_footstep - 1)
-        hip_pos = self.task.hip_pos[self.env_arange.unsqueeze(-1), idcs, :2]
-        hip_pos[:, :, 0] += x_offset
+        hip_pos = self.task.hip_pos[..., :2].clone()
+        hip_pos[:, :, 0] += self.task.args.nn_ft_dist
+
+        yaw = self.task.base_euler[:, 2]
+        rot_mat = batch_z_2D_rot_mat(yaw)
+        width_addition = torch.tensor([[0.0], [1.0]], device=self.device)
+        width_addition = (rot_mat @ width_addition).squeeze(-1)
+
+        hip_pos[:, [0, 2], 1] += self.task.args.nn_ft_width
+        hip_pos[:, [1, 3], 1] -= self.task.args.nn_ft_width
+        hip_pos = hip_pos[self.env_arange.unsqueeze(-1), idcs]
         self.footsteps[self.env_arange, self.current_footstep + 1] = hip_pos
 
     def update(self):
