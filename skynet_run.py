@@ -16,15 +16,16 @@ def get_blacklist():
 
 def main():
     num_runs = 5
-    job_nickname = "h_2_ahead_alt"
-    python_cmd = "python rlg_train.py --cfg_env 12_H_2_ahead_alt --cfg_train 12_large_net --wandb_project aliengo_12"
+    job_nickname = "h_med_step_curr_4_adapt"
+    python_cmd = "python rlg_train.py --adaptive_curriculum 0.004 --cfg_env 12_H_med_steps --cfg_train 12_large_net --wandb_project aliengo_12"
 
     slurm_options = [
         "--cpus-per-gpu", "7",
-        "-p", "short",
-        "--constraint", "2080_ti",
+        "-p", "overcap",
+        "-A", "overcap",
+        "--constraint", "a40",
         "--gres", "gpu:1",
-        "-x", get_blacklist(),
+        "-x", get_blacklist() + ",cortana,fiona, xaea-12",
     ]
 
     # loop through random seeds

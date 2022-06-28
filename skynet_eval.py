@@ -7,10 +7,12 @@ import subprocess
 from skynet_run import get_blacklist
 
 def main():
-    for cf in [25, 50, 75, 100, 150, 200]:
-        for bs in [0.15, 0.225, 0.3]:
-            run_name = "H ss state (0.2 rand new)"  # SOTA
-            #run_name = "H long steps curr 1k"
+#    for cf in [25, 50, 75, 100, 150, 200]:
+    for cf in [75]:
+        for bs in [0.225]:
+        #for bs in [0.15, 0.225, 0.3]:
+            #run_name = "H ss state (0.2 rand new)"  # SOTA
+            run_name = "H new sota"
             des_dir_coef = cf  # default: 50
             search_box_len = bs  # default: 0.15
             job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower() + "dd_" + str(des_dir_coef) + "_bb_" + str(search_box_len).replace(".", "_")
@@ -19,11 +21,11 @@ def main():
 
             slurm_options = [
                 "--cpus-per-gpu", "7",
-                "-p", "overcap",
-                "-A", "overcap",
-                "--constraint", "rtx_6000|a40",
+                "-p", "short",
+                #"-A", "overcap",
+                "--constraint", "a40",
                 "--gres", "gpu:8",
-                "-x", get_blacklist(),
+                "-x", get_blacklist() + ",cortana,fiona",
                 #"-w", "zima, sophon, claptrap"
             ]
 
