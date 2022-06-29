@@ -6,7 +6,7 @@ Run python/rlgpu/evluate_policy.py on skynet in a docker container with
 import subprocess
 from skynet_run import get_blacklist
 import itertools
-from random import shuffle
+import random
 
 def main():
     des_dir_coefficients = [50, 75, 150]
@@ -14,8 +14,9 @@ def main():
     nn_ft_dists = [0.05, 0.1, 0.2, 0.4]
     nn_ft_widths = [0.0, 0.075, 0.15]
     prod = list(itertools.product(des_dir_coefficients, box_lengths, nn_ft_dists, nn_ft_widths))
-    shuffle(prod)
-    for cf, bs, nn_ft_dist, nn_ft_width in prod:
+    random.seed(1)
+    random.shuffle(prod)
+    for cf, bs, nn_ft_dist, nn_ft_width in prod[:20]:
         # run_name = "H ss state (0.2 rand new)"  # SOTA
         run_name = "H new sota"
         des_dir_coef = cf  # default: 50
@@ -30,6 +31,7 @@ def main():
             "-A", "overcap",
             "--constraint", "rtx_6000|a40",
             "--gres", "gpu:8",
+            "--requeue",
             "-x", get_blacklist() + ",cortana,fiona",
             #"-w", "zima, sophon, claptrap"
         ]

@@ -129,7 +129,7 @@ def configure_two_ahead_opt(cmds, args):
 
 
 def add_save_fname_arg(cmds):
-    uninformative_args = {"--num_envs", "--gather_stats", "--ws", "--data_dir", "python", "--start_after"}
+    uninformative_args = {"--num_envs", "--gather_stats", "--ws", "--data_dir", "python", "--start_after", "--timeout"}
     single_uninformative_args = {"--play", "--headless"}
     for cmd in cmds:
         cmd_copy = list(cmd)
@@ -145,6 +145,8 @@ def add_save_fname_arg(cmds):
             if len(cmd_copy) <= i:
                 break
         save_fname = "data_" + "__".join(cmd_copy)
+        if len(save_fname) > 255:
+            raise OSError(f"Save file name \n\n{save_fname}\n\n of length {len(save_fname)} is longer than 255.")
         cmd.extend(["--save_fname", save_fname])
 
 def determine_ws_arg(id):
