@@ -18,6 +18,7 @@ import io
 import gzip
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
+import re
 
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
@@ -29,7 +30,8 @@ class CPU_Unpickler(pickle.Unpickler):
 def main():
 
     sota = {
-        "Proposed Method" : "H ss state (0.2 rand new)",
+        # "Proposed Method" : "H ss state (0.2 rand new)",
+        "Proposed Method" : "H_2_ahead_3dd_76_bb_0_225",
         "End-to-end": "F ss state final",
     }
     args = get_args()
