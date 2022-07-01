@@ -54,7 +54,7 @@ def generate_commands(args):
     cmds = []
     if args.debug:
         env_difficulties = [
-            (None, None),  # this is for flat ground
+            # (None, None),  # this is for flat ground
             (.25, 0.0),  # (percent infill, stepping stone height variation)
             (.100, 0.1),
         ]
@@ -112,42 +112,45 @@ def generate_commands(args):
             "--data_dir", data_dir
         )
         if args.run_name[0] == "H":
-            cmds.extend(generate_in_place_cmds(args, cmd_base))
-        cmds.extend(generate_training_reward_cmd(args, cmd_base))
+            cmds.extend(generate_in_place_cmds(args, cmd_base, id_))
+        cmds.extend(generate_training_reward_cmd(args, cmd_base, id_))
         cmds.extend(generate_terrain_cmds(args, env_difficulties, cmd_base, id_))
-    configure_two_ahead_opt(cmds, args)
-    add_save_fname_arg(cmds)
+    # configure_two_ahead_opt(cmds, args)
+    # add_save_fname_arg(cmds)
     return cmds
 
 
-def configure_two_ahead_opt(cmds, args):
-    # if "ahead" in args.run_name:
-    if True:  # TODO
-        for cmd in cmds:
-            if "--plot_values" in cmd:
-                cmd.extend(["--two_ahead_opt", "--nn_ft_dist", str(args.nn_ft_dist), "--nn_ft_width", str(args.nn_ft_width)])
+# def configure_two_ahead_opt(cmds, args):
+#     # TODO change things so that if I'm running two_ahead_opt, the in-place runs have the next next targets right under the shoulders
+#     # if "ahead" in args.run_name:
+#     if True:  # TODO
+#         for cmd in cmds:
+#             if "--plot_values" in cmd:
+#                 cmd.extend(["--two_ahead_opt"])
+#                 if ""
+#                 cmd.extend(["--nn_ft_dist", str(args.nn_ft_dist), "--nn_ft_width", str(args.nn_ft_width)])
 
 
-def add_save_fname_arg(cmds):
-    uninformative_args = {"--num_envs", "--gather_stats", "--ws", "--data_dir", "python", "--start_after", "--timeout"}
-    single_uninformative_args = {"--play", "--headless"}
-    for cmd in cmds:
-        cmd_copy = list(cmd)
-        i = 0
-        while True:
-            if cmd_copy[i] in uninformative_args:
-                cmd_copy.pop(i)
-                cmd_copy.pop(i)
-            elif cmd_copy[i] in single_uninformative_args:
-                cmd_copy.pop(i)
-            else:
-                i += 1
-            if len(cmd_copy) <= i:
-                break
-        save_fname = "data_" + "__".join(cmd_copy)
-        if len(save_fname) > 255:
-            raise OSError(f"Save file name \n\n{save_fname}\n\n of length {len(save_fname)} is longer than 255.")
-        cmd.extend(["--save_fname", save_fname])
+# def add_save_fname_arg(cmds):
+#     uninformative_args = {"--num_envs", "--gather_stats", "--ws", "--data_dir", "python", "--start_after", "--timeout"}
+#     single_uninformative_args = {"--play", "--headless"}
+#     for cmd in cmds:
+#         cmd_copy = list(cmd)
+#         i = 0
+#         while True:
+#             if cmd_copy[i] in uninformative_args:
+#                 cmd_copy.pop(i)
+#                 cmd_copy.pop(i)
+#             elif cmd_copy[i] in single_uninformative_args:
+#                 cmd_copy.pop(i)
+#             else:
+#                 i += 1
+#             if len(cmd_copy) <= i:
+#                 break
+#         save_fname = "data_" + "__".join(cmd_copy)
+#         if len(save_fname) > 255:
+#             raise OSError(f"Save file name \n\n{save_fname}\n\n of length {len(save_fname)} is longer than 255.")
+#         cmd.extend(["--save_fname", save_fname])
 
 def determine_ws_arg(id):
     saved_ws = int(get_ws_from_run_id(id))  # workstation that the model file is saved on
@@ -161,8 +164,8 @@ def determine_ws_arg(id):
         return saved_ws
 
 
-def generate_training_reward_cmd(args, cmd_base):
-    return [list(cmd_base)]
+def generate_training_reward_cmd(args, cmd_base, id_):
+    return [list(cmd_base) + ["--save_fname", str(id_) + "__" + "training_rew"]]
 
 
 def generate_terrain_cmds(args, env_difficulties, cmd_base, id_):
@@ -179,16 +182,20 @@ def generate_terrain_cmds(args, env_difficulties, cmd_base, id_):
                     "--des_dir", "0",
                     "--box_len", str(args.box_len),
                     "--footstep_targets_in_place"]
-        if infill is None:
-            cmd += ["--no_ss"]
-        else:
+            cmd += ["--two_ahead_opt",
+                    "--nn_ft_dist", str(args.nn_ft_dist),
+                    "--nn_ft_width", str(args.nn_ft_width)]
+        # if infill is None:
+        #     cmd += ["--no_ss"]
+        # else:
             cmd += ["--add_ss", "--ss_infill", str(infill),
                     "--ss_height_var", str(height_var)]
+            cmd += ["--save_fname", str(id_) + "__" + str(infill).replace('.', 'p') + '_' + str(height_var).replace('.', 'p')]
         cmds.append(cmd)
     return cmds
 
 
-def generate_in_place_cmds(args, global_cmd_base):
+def generate_in_place_cmds(args, global_cmd_base, id_):
     cmds = []
 
     cmd_base = global_cmd_base + (
@@ -200,25 +207,45 @@ def generate_in_place_cmds(args, global_cmd_base):
     other_args = []
 
     # stepping in place with optimization on flat ground
-    directions = [0]
+    directions = [0]  # NOTE my current "two_ahead_opt" doesn't work with anything other than the fwd x dir (0)
     for direct in directions:
         other_args.append([
             "--des_dir", str(direct),
             "--des_dir_coef", str(args.des_dir_coef),
             "--plot_values",
             "--box_len", str(args.box_len),
+
+            "--two_ahead_opt",
+            "--nn_ft_dist", str(args.nn_ft_dist),
+            "--nn_ft_width", str(args.nn_ft_width),
+            "--save_fname", str(id_) + "__" + "flatground"
         ])
 
     # stepping in place with random footstep selection
+    # NOTE: I don't need two ahead opt for this and the next, because I have footstep targets in place, so the next next footstep targets will be right under the robot
     other_args.append([
         "--plot_values",
         "--random_footsteps",
         "--des_dir_coef", "0",
         "--box_len", str(args.box_len),
+
+        "--save_fname", str(id_) + "__" + "in_place_rand"
     ])
 
-    # stepping in place without optimization
-    other_args.append([])
+    # stepping in place with optimized footsteps
+    other_args.append([
+        "--plot_values",
+        "--des_dir_coef", "0",
+        "--box_len", str(args.box_len),
+
+        # "--two_ahead_opt",
+        # "--nn_ft_dist", "0",
+        # "--nn_ft_width", "0.083",
+        "--save_fname", str(id_) + "__" + "in_place_opt"
+    ])
+
+    # stepping in place without optimization (fixed footstep targets)
+    other_args.append(["--save_fname", str(id_) + "__" + "in_place_fixed"])
 
     for temp in other_args:
         cmd = list(cmd_base) + temp

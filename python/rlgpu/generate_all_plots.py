@@ -54,7 +54,11 @@ def main():
     # sys.exit()
     generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
+    print_latex_table(data, sota, args)
 
+
+def print_latex_table(data, sota, args):
+    pass
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -66,102 +70,106 @@ def get_args():
     return parser.parse_args()
 
 
-def load_relevent_data(sota, args):
-    """load data relevent to the main performance super plot"""
-    names_to_analyze = sota
-    if args.run_name:
-        names = args.run_name.split(',')
-        names = [name.rstrip().lstrip() for name in names]
-        if any(name in sota.values() for name in names):
-            raise ValueError("run_name is already in SOTA")
-        else:
-            for name in names:
-                names_to_analyze[name] = name
+# def load_relevent_data(sota, args):
+#     """load data relevent to the main performance super plot"""
+#     names_to_analyze = sota
+#     if args.run_name:
+#         names = args.run_name.split(',')
+#         names = [name.rstrip().lstrip() for name in names]
+#         if any(name in sota.values() for name in names):
+#             raise ValueError("run_name is already in SOTA")
+#         else:
+#             for name in names:
+#                 names_to_analyze[name] = name
 
-    data = {}
+#     data = {}
 
-    for method in names_to_analyze:
-        data[method] = {}
-        data_dir = os.path.join("data", names_to_analyze[method].replace(" ", "_").replace("(", "").replace(")", "").replace(".", ""))
-        all_files = os.listdir(data_dir)
-        relevant_files = []
-        for file in all_files:
-            if file[-3:] == "pgz":
-                relevant_files.append(file)
-        for file in relevant_files:
-            file_parts = file[5:-4].split("__")
-            if "--ss_height_var" in file_parts:
-                heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
-                infill = float(file_parts[file_parts.index("--ss_infill") + 1])
-                env_key = (infill, heightvar)
-            elif names_to_analyze[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
-                env_key = "flatground"
-            elif names_to_analyze[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
-                env_key = "flatground"
-            elif len(file_parts) == 4:  # special case for getting training reward to normalize stats by
-                env_key = "training_rew"
-            else:
-                continue
+#     for method in names_to_analyze:
+#         data[method] = {}
+#         data_dir = os.path.join("data", names_to_analyze[method].replace(" ", "_").replace("(", "").replace(")", "").replace(".", ""))
+#         all_files = os.listdir(data_dir)
+#         relevant_files = []
+#         for file in all_files:
+#             if file[-3:] == "pgz":
+#                 relevant_files.append(file)
+#         for file in relevant_files:
+#             file_parts = file[5:-4].split("__")
+#             if "--ss_height_var" in file_parts:
+#                 heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
+#                 infill = float(file_parts[file_parts.index("--ss_infill") + 1])
+#                 env_key = (infill, heightvar)
+#             elif names_to_analyze[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
+#                 env_key = "flatground"
+#             elif names_to_analyze[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
+#                 env_key = "flatground"
+#             elif len(file_parts) == 4:  # special case for getting training reward to normalize stats by
+#                 env_key = "training_rew"
+#             else:
+#                 continue
 
-            checkpoint = file_parts[file_parts.index("--checkpoint") + 1]
-            if checkpoint not in data[method]:
-                data[method][checkpoint] = {}
-            data[method][checkpoint][env_key] = {}
-            temp = data[method][checkpoint][env_key]
+#             checkpoint = file_parts[file_parts.index("--checkpoint") + 1]
+#             if checkpoint not in data[method]:
+#                 data[method][checkpoint] = {}
+#             data[method][checkpoint][env_key] = {}
+#             temp = data[method][checkpoint][env_key]
 
-            # with open(os.path.join(data_dir, file), 'rb') as f:
-            with gzip.GzipFile(os.path.join(data_dir, file), 'r') as f:
-                x = CPU_Unpickler(f).load()
-            temp["successful"] = x["succcessful"]
-            temp["reward"] = x["reward"].squeeze().sum(dim=1)
-            temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
-            idx = temp["eps_len"] - 1
-            temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
+#             # with open(os.path.join(data_dir, file), 'rb') as f:
+#             with gzip.GzipFile(os.path.join(data_dir, file), 'r') as f:
+#                 x = CPU_Unpickler(f).load()
+#             temp["successful"] = x["succcessful"]
+#             temp["reward"] = x["reward"].squeeze().sum(dim=1)
+#             temp["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long)
+#             idx = temp["eps_len"] - 1
+#             temp["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
 
-                # common_footstep = x["current_footstep"].min().item()
-                # num_runs = x["still_running"].shape[0]
-                # rews_sum = 0.0
-                # for i in range(num_runs):
-                #     rews_sum += x["reward"][i, :termination_idcs[i], 0].sum()
+#                 # common_footstep = x["current_footstep"].min().item()
+#                 # num_runs = x["still_running"].shape[0]
+#                 # rews_sum = 0.0
+#                 # for i in range(num_runs):
+#                 #     rews_sum += x["reward"][i, :termination_idcs[i], 0].sum()
 
-                # if is_random:
-                #     key = "random"
-                # elif is_optim:
-                #     key = "optim"
-                # else:
-                #     key = "in_place"
-                # data[checkpoint][key] = {}
-                # data[checkpoint][key]["Average rew per timestep"] = (rews_sum / termination_idcs.sum()).item()
-                # data[checkpoint][key]["Average rew per footstep"] = (rews_sum / x['current_footstep'].sum()).item()
-                # data[checkpoint][key]["Average rew per rollout"] = (rews_sum / num_runs).item()
-                # data[checkpoint][key]["Average rollout length"] = (termination_idcs.float().mean()).item()
-                # data[checkpoint][key]["Average footstep reached"] = (x['current_footstep'].float().mean()).item()
-                # data[checkpoint][key]["Average timesteps per footstep"] = (termination_idcs.float().sum() / x['current_footstep'].float().sum()).item()
+#                 # if is_random:
+#                 #     key = "random"
+#                 # elif is_optim:
+#                 #     key = "optim"
+#                 # else:
+#                 #     key = "in_place"
+#                 # data[checkpoint][key] = {}
+#                 # data[checkpoint][key]["Average rew per timestep"] = (rews_sum / termination_idcs.sum()).item()
+#                 # data[checkpoint][key]["Average rew per footstep"] = (rews_sum / x['current_footstep'].sum()).item()
+#                 # data[checkpoint][key]["Average rew per rollout"] = (rews_sum / num_runs).item()
+#                 # data[checkpoint][key]["Average rollout length"] = (termination_idcs.float().mean()).item()
+#                 # data[checkpoint][key]["Average footstep reached"] = (x['current_footstep'].float().mean()).item()
+#                 # data[checkpoint][key]["Average timesteps per footstep"] = (termination_idcs.float().sum() / x['current_footstep'].float().sum()).item()
 
-                # print(file)
-                # for k, v in data[checkpoint][key].items():
-                #     print(f"{k}: {v :0.2f}")
-                # # print(f"Average rew per timestep: {rews_sum / termination_idcs.sum() :.3f}")
-                # # print(f"Average rew per footstep: {rews_sum / x['current_footstep'].sum() :.2f}")
-                # # print(f"Average rew per rollout: {rews_sum / num_runs :.2f}")
-                # # print(f"Average rollout length: {termination_idcs.float().mean() :.1f}")
-                # # print(f"Average footstep reached: {x['current_footstep'].float().mean() :.1f}")
-                # # print(f"Average timesteps per footstep: {termination_idcs.float().sum() / x['current_footstep'].float().sum() :.1f}")
-                # print("\n")
+#                 # print(file)
+#                 # for k, v in data[checkpoint][key].items():
+#                 #     print(f"{k}: {v :0.2f}")
+#                 # # print(f"Average rew per timestep: {rews_sum / termination_idcs.sum() :.3f}")
+#                 # # print(f"Average rew per footstep: {rews_sum / x['current_footstep'].sum() :.2f}")
+#                 # # print(f"Average rew per rollout: {rews_sum / num_runs :.2f}")
+#                 # # print(f"Average rollout length: {termination_idcs.float().mean() :.1f}")
+#                 # # print(f"Average footstep reached: {x['current_footstep'].float().mean() :.1f}")
+#                 # # print(f"Average timesteps per footstep: {termination_idcs.float().sum() / x['current_footstep'].float().sum() :.1f}")
+#                 # print("\n")
 
     return data
 
 def parallel_load_relevent_data(sota, args):
     """load data relevent to the main performance super plot"""
     names_to_analyze = sota
-    if args.run_name:
-        names = args.run_name.split(',')
-        names = [name.rstrip().lstrip() for name in names]
-        if any(name in sota.values() for name in names):
-            raise ValueError("run_name is already in SOTA")
-        else:
-            for name in names:
-                names_to_analyze[name] = name
+    all_runs = os.listdir("data")
+    for run in all_runs:
+        if "H_new_sotadd" in run:
+            names_to_analyze[run] = run
+    # if args.run_name:
+    #     names = args.run_name.split(',')
+    #     names = [name.rstrip().lstrip() for name in names]
+    #     if any(name in sota.values() for name in names):
+    #         raise ValueError("run_name is already in SOTA")
+    #     else:
+    #         for name in names:
+    #             names_to_analyze[name] = name
 
     # first populate the data
     data = {}
@@ -178,22 +186,32 @@ def parallel_load_relevent_data(sota, args):
             for file in all_files:
                 if file[-3:] == "pgz":
                     relevant_files.append(file)
-            for file in relevant_files:
-                file_parts = file[5:-4].split("__")
-                if "--ss_height_var" in file_parts:
-                    heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
-                    infill = float(file_parts[file_parts.index("--ss_infill") + 1])
-                    env_key = (infill, heightvar)
-                elif names_to_analyze[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
-                    env_key = "flatground"
-                elif names_to_analyze[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
-                    env_key = "flatground"
-                elif len(file_parts) == 4:  # special case for getting training reward to normalize stats by
-                    env_key = "training_rew"
+            for file in relevant_files:  # TODO
+                file_parts = file[:-4].split("__")
+                if file_parts[1] in {"flatground", "in_place_fixed", "in_place_opt", "in_place_rand", "training_rew"}:
+                    env_key = file_parts[1]
                 else:
-                    continue
+                    temp = file_parts[1].split('_')
+                    infill = float(temp[0].replace('p', '.'))
+                    height_var = float(temp[1].replace('p', '.'))
+                    env_key = (infill, height_var)
+                    # if "--ss_height_var" in file_parts:
+                    #     heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
+                    #     infill = float(file_parts[file_parts.index("--ss_infill") + 1])
+                    #     env_key = (infill, heightvar)
+                    # elif names_to_analyze[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
+                    #     env_key = "flatground"
+                    # elif names_to_analyze[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
+                    #     env_key = "flatground"
+                    # elif len(file_parts) == 2:  # special case for getting training reward to normalize stats by
+                    #     env_key = "training_rew"
+                    # elif "--random_footsteps" in file_parts:
+                    #     env_key = "in_place_rand"
+                    # elif ""
+                    # else:
+                    #     continue
 
-                checkpoint = file_parts[file_parts.index("--checkpoint") + 1]
+                checkpoint = file_parts[0]
                 if checkpoint not in data[method]:
                     data[method][checkpoint] = {}
                 data[method][checkpoint][env_key] = {}
