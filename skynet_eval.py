@@ -9,14 +9,18 @@ import itertools
 import random
 
 def main():
-    des_dir_coefficients = [50, 75, 150]
-    box_lengths = [0.2, 0.225, 0.275]
-    nn_ft_dists = [0.05, 0.1, 0.2, 0.4]
-    nn_ft_widths = [0.0, 0.075, 0.15]
-    prod = list(itertools.product(des_dir_coefficients, box_lengths, nn_ft_dists, nn_ft_widths))
-    random.seed(1)
-    random.shuffle(prod)
-    for cf, bs, nn_ft_dist, nn_ft_width in prod[75:]:
+    # des_dir_coefficients = [50, 75, 150]
+    # box_lengths = [0.2, 0.225, 0.275]
+    # nn_ft_dists = [0.05, 0.1, 0.2, 0.4]
+    # nn_ft_widths = [0.0, 0.075, 0.15]
+    # prod = list(itertools.product(des_dir_coefficients, box_lengths, nn_ft_dists, nn_ft_widths))
+    # random.seed(1)
+    # random.shuffle(prod)
+    prod = [(150, 0.2, 0.2, 0.15),
+        (50, 0.275, 0.1, 0.15),
+        (75, 0.225, 0.1, 0.075),
+        (75, 0.225, 0.1, 0.15)]
+    for cf, bs, nn_ft_dist, nn_ft_width in prod:
         # run_name = "H ss state (0.2 rand new)"  # SOTA
         run_name = "H new sota"
         des_dir_coef = cf  # default: 50
@@ -29,7 +33,7 @@ def main():
             "--cpus-per-gpu", "7",
             "-p", "overcap",
             "-A", "overcap",
-            "--constraint", "rtx_6000|a40",
+            "--constraint", "a40",
             "--gres", "gpu:8",
             "--requeue",
             "-x", get_blacklist() + ",cortana,fiona",
