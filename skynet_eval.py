@@ -16,7 +16,7 @@ def main():
     prod = list(itertools.product(des_dir_coefficients, box_lengths, nn_ft_dists, nn_ft_widths))
     random.seed(1)
     random.shuffle(prod)
-    for cf, bs, nn_ft_dist, nn_ft_width in prod[:20]:
+    for cf, bs, nn_ft_dist, nn_ft_width in prod[75:]:
         # run_name = "H ss state (0.2 rand new)"  # SOTA
         run_name = "H new sota"
         des_dir_coef = cf  # default: 50
