@@ -39,7 +39,6 @@ def main():
     if not os.path.exists("plots"):
         os.makedirs("plots")
     save_dir = os.path.join("plots", random_id)
-    os.mkdir(save_dir)
     args.save_dir = save_dir
     # s = time.time()
     # data = load_relevent_data(sota, args)
@@ -51,9 +50,43 @@ def main():
     # }
     data = parallel_load_relevent_data(sota, args)
     print(f"Parallel loading took {time.time() - e :.2f} seconds")
+    # score_runs(data, sota, args)
+    # breakpoint()
     # sys.exit()
+    os.mkdir(save_dir)
     generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
+
+
+def score_runs(data, sota, args):
+
+    metric = "successful"
+    end_to_end_rates = avg_across_seeds(data["End-to-end"], metric, floats=True)
+    max_score = -float("inf")
+    max_run = "End-to-end"
+    scores = {}
+    for method in data:
+        score = 0
+        vals = avg_across_seeds(data[method], metric, floats=True)
+        for env in vals.keys():
+            if vals[env]['mean'] > end_to_end_rates[env]['mean']:
+                score += 1
+        if score == 14:
+            print(f"{method} has a score of 14")
+        if score in scores:
+            scores[score] += 1
+        else:
+            scores[score] = 1
+        if score > max_score:
+            max_score = score
+            max_run = method
+    print(scores)
+    if scores[max_score] > 1:
+        print("$"*100 + "multiple max scores, need to compare")
+    print(f"max score is {max_score} for run \n\n {max_run} \n\n")
+
+
+
 
 
 def get_args():
@@ -67,20 +100,27 @@ def get_args():
 
 
 def load_relevent_data(sota, args):
-    """load data relevent to the main performance super plot"""
     names_to_analyze = sota
-    if args.run_name:
-        names = args.run_name.split(',')
-        names = [name.rstrip().lstrip() for name in names]
-        if any(name in sota.values() for name in names):
-            raise ValueError("run_name is already in SOTA")
-        else:
-            for name in names:
-                names_to_analyze[name] = name
+    all_runs = os.listdir("data")
+    for run in all_runs:
+        if "H_new_sotadd" in run:
+            names_to_analyze[run] = run
+    # if args.run_name:
+    #     names = args.run_name.split(',')
+    #     names = [name.rstrip().lstrip() for name in names]
+    #     if any(name in sota.values() for name in names):
+    #         raise ValueError("run_name is already in SOTA")
+    #     else:
+    #         for name in names:
+    #             names_to_analyze[name] = name
 
     data = {}
-
-    for method in names_to_analyze:
+    stuff = list(names_to_analyze.keys())
+    stuff.sort()
+    # NOTE: I know that index 50 is bad
+    start = 51
+    for kk, method in enumerate(stuff[start:], start):
+        print(f"index {kk} name {method}")
         data[method] = {}
         data_dir = os.path.join("data", names_to_analyze[method].replace(" ", "_").replace("(", "").replace(")", "").replace(".", ""))
         all_files = os.listdir(data_dir)
@@ -151,26 +191,66 @@ def load_relevent_data(sota, args):
 
     return data
 
+def parse_names(input):
+    # return True
+    temp = input.split('_')
+    matches = {
+        # (150, 0.225, 0.2, 0.15),
+        # (150, 0.225, 0.2, 0.075),
+        # (150, 0.275, 0.2, 0.15),
+        # (150, 0.275, 0.2, 0.075),
+        # (150, 0.2, 0.1, 0.075),
+        # (150, 0.2, 0.1, 0.15),
+        (150, 0.2, 0.2, 0.15),
+        # (50, 0.275, 0.05, 0.075),
+        # (50, 0.225, 0.2, 0.15),
+        # (50, 0.275, 0.2, 0.15),
+        # (50, 0.2, 0.2, 0.15),
+        (50, 0.275, 0.1, 0.15),
+        (75, 0.225, 0.1, 0.075),  # BEST
+        (75, 0.225, 0.1, 0.15),
+        # (75, 0.275, 0.1, 0.15),
+        # (75, 0.275, 0.1, 0.075),
+        # (75, 0.2, 0.05, 0.0),
+        # (75, 0.2, 0.2, 0.15),
+        # (75, 0.2, 0.2, 0.075),
+    }
+    try:
+        test_tuple = (float(temp[3]), float("0." + temp[6]), float("0." + temp[9]), float("0." + temp[12]))
+    except IndexError:
+        return False
+    return test_tuple in matches
+
 def parallel_load_relevent_data(sota, args):
     """load data relevent to the main performance super plot"""
     names_to_analyze = sota
-    if args.run_name:
-        names = args.run_name.split(',')
-        names = [name.rstrip().lstrip() for name in names]
-        if any(name in sota.values() for name in names):
-            raise ValueError("run_name is already in SOTA")
-        else:
-            for name in names:
-                names_to_analyze[name] = name
+    all_runs = os.listdir("data")
+
+    for run in all_runs:
+        if "H_new_sotadd" in run and "debug" not in run and parse_names(run):
+            names_to_analyze[run] = run
+
+    # if args.run_name:
+    #     names = args.run_name.split(',')
+    #     names = [name.rstrip().lstrip() for name in names]
+    #     if any(name in sota.values() for name in names):
+    #         raise ValueError("run_name is already in SOTA")
+    #     else:
+    #         for name in names:
+    #             names_to_analyze[name] = name
 
     # first populate the data
     data = {}
     futures = []
+    stuff = list(names_to_analyze.keys())
+    stuff.sort()
     with ThreadPoolExecutor() as executor:
         # future = executor.submit(pow, 323, 1235)
         # print(future.result())
 
-        for method in names_to_analyze:
+        for method in stuff:
+            if method == "H_new_sotadd_50_bb_0_275_dist_0_05_width_0_15":
+                continue
             data[method] = {}
             data_dir = os.path.join("data", names_to_analyze[method].replace(" ", "_").replace("(", "").replace(")", "").replace(".", ""))
             all_files = os.listdir(data_dir)
@@ -361,10 +441,11 @@ def generate_sup_plot(data, sota, args):
             ax.set_title("Episode Length")
             ax.set_ylabel("Episode Length (timesteps)")
     handles, labels = ax.get_legend_handles_labels()
-    if args.run_name:
-        fig.legend(handles, labels, bbox_to_anchor=(1.25, 0.9))
-    else:
-        fig.legend(handles, labels, loc=(0.775, 0.9125))
+    # if args.run_name:
+    #     fig.legend(handles, labels, bbox_to_anchor=(1.25, 0.9))
+    # else:
+    #     fig.legend(handles, labels, loc=(0.775, 0.9125))
+    fig.legend(handles, labels, bbox_to_anchor=(1.25, 0.9))
     # plt.show()
 
     # plt.title("3 random seeds,  30 rollouts each, 10k steps timeout, Error bars are std between seeds")
