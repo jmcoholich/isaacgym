@@ -12,7 +12,14 @@ docker run \
 echo Finished evaluation run, copying data now
 
 # Now move the data from SkyNet to my personal workstation
-DIR_NAME=$(python -c "print('$1'.replace(' ', '_').replace('(', '').replace(')', '').replace('.', '') + 'dd_' + '$3' + '_bb_' + '$4'.replace('.', '_') + '_dist_' + str('$5').replace('.', '_') + '_width_' + str('$6').replace('.', '_'))")
+TEST="$1"
+if [[ "${TEST:0:1}" == "H" ]]
+then
+    DIR_NAME=$(python -c "print('$1'.replace(' ', '_').replace('(', '').replace(')', '').replace('.', '') + 'dd_' + '$3' + '_bb_' + '$4'.replace('.', '_') + '_dist_' + str('$5').replace('.', '_') + '_width_' + str('$6').replace('.', '_'))")
+else
+    DIR_NAME=$(python -c "print('$1'.replace(' ', '_').replace('(', '').replace(')', '').replace('.', ''))")
+fi
+
 DATA_DIR="python/rlgpu/data/$DIR_NAME"
 PWS_DIR="jcoholich@143.215.128.197:/home/jcoholich/isaacgym/python/rlgpu/data/"  # personal workstation directory
 echo Moving data from:

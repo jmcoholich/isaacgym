@@ -16,16 +16,20 @@ def main():
     # prod = list(itertools.product(des_dir_coefficients, box_lengths, nn_ft_dists, nn_ft_widths))
     # random.seed(1)
     # random.shuffle(prod)
-    prod = [(150, 0.2, 0.2, 0.15),
-        (50, 0.275, 0.1, 0.15),
-        (75, 0.225, 0.1, 0.075),
-        (75, 0.225, 0.1, 0.15)]
+    # prod = [(150, 0.2, 0.2, 0.15),
+    #     (50, 0.275, 0.1, 0.15),
+    #     (75, 0.225, 0.1, 0.075),
+    #     (75, 0.225, 0.1, 0.15)]
+    prod = [(150, 0.2, 0.2, 0.15)]
     for cf, bs, nn_ft_dist, nn_ft_width in prod:
         # run_name = "H ss state (0.2 rand new)"  # SOTA
-        run_name = "H new sota"
+        # run_name = "H new sota"
+        run_name = "F ss state final"
         des_dir_coef = cf  # default: 50
         search_box_len = bs  # default: 0.15
-        job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower() + "dd_" + str(des_dir_coef) + "_bb_" + str(search_box_len).replace(".", "_") + "_dist_" + str(nn_ft_dist).replace(".", "_") + "_width_" + str(nn_ft_width).replace(".", "_")
+        job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower()
+        if run_name[0] == "H":
+            job_nickname += "dd_" + str(des_dir_coef) + "_bb_" + str(search_box_len).replace(".", "_") + "_dist_" + str(nn_ft_dist).replace(".", "_") + "_width_" + str(nn_ft_width).replace(".", "_")
         # python_cmd = f"python evaluate_policy.py --run_name='{run_name}' --debug"
         python_cmd = run_name
 
@@ -37,7 +41,7 @@ def main():
             "--gres", "gpu:8",
             "--requeue",
             "-x", get_blacklist() + ",cortana,fiona",
-            #"-w", "zima, sophon, claptrap"
+            # "-w", "zima, sophon, claptrap"
         ]
 
         # loop through random seeds

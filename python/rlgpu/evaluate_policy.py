@@ -89,10 +89,13 @@ def generate_commands(args):
 
     if args.run_name:
         ids = get_wandb_ids_from_run_name(args.run_name)
-        data_dir = "data/" + args.run_name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "") + "dd_" + str(args.des_dir_coef) + "_bb_" + str(args.box_len).replace('.', '_') + "_dist_" + str(args.nn_ft_dist).replace('.', '_') + "_width_" + str(args.nn_ft_width).replace('.', '_')
+        data_dir = "data/" + args.run_name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "")
+        if args.run_name[0] == "H":
+            data_dir += "dd_" + str(args.des_dir_coef) + "_bb_" + str(args.box_len).replace('.', '_') + "_dist_" + str(args.nn_ft_dist).replace('.', '_') + "_width_" + str(args.nn_ft_width).replace('.', '_')
         if args.debug:
             ids = ids[:2]
     else:
+        raise NotImplementedError()
         ids = [args.id]
         data_dir = "data/" + args.id
 
@@ -188,9 +191,9 @@ def generate_terrain_cmds(args, env_difficulties, cmd_base, id_):
         # if infill is None:
         #     cmd += ["--no_ss"]
         # else:
-            cmd += ["--add_ss", "--ss_infill", str(infill),
-                    "--ss_height_var", str(height_var)]
-            cmd += ["--save_fname", str(id_) + "__" + str(infill).replace('.', 'p') + '_' + str(height_var).replace('.', 'p')]
+        cmd += ["--add_ss", "--ss_infill", str(infill),
+                "--ss_height_var", str(height_var)]
+        cmd += ["--save_fname", str(id_) + "__" + str(infill).replace('.', 'p') + '_' + str(height_var).replace('.', 'p')]
         cmds.append(cmd)
     return cmds
 
