@@ -117,7 +117,7 @@ def generate_commands(args):
         if args.run_name[0] == "H":
             cmds.extend(generate_in_place_cmds(args, cmd_base, id_))
         else:
-            cmds.extend([list(cmd_base) + ['--no_ss']])
+            cmds.extend([list(cmd_base) + ['--no_ss', "--save_fname", str(id_) + "__" + "flatground"]])
         cmds.extend(generate_training_reward_cmd(args, cmd_base, id_))
         cmds.extend(generate_terrain_cmds(args, env_difficulties, cmd_base, id_))
     # configure_two_ahead_opt(cmds, args)
