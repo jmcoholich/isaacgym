@@ -78,7 +78,8 @@ def save_load_config_file_names(args):
         args.run_id = random_id
     wandb.init(config=args, project=args.wandb_project,
                tags=[str(detect_workstation_id())],
-               settings=wandb.Settings(_disable_stats=True))
+               settings=wandb.Settings(_disable_stats=True),
+               name=args.run_name)
     return args
 
 

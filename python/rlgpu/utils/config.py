@@ -301,6 +301,7 @@ def get_args(benchmark=False, use_rlg_config=False):
             "help": "Requires --experiment flag, adds physics engine, sim device, pipeline info and if domain randomization is used to the experiment name provided by user"},
         {"name": "--cfg_train", "type": str,
             "default": "Base"},
+        {"name": "--wandb_run_name", "type": str},
         {"name": "--cfg_env", "type": str, "default": "Base"},
         {"name": "--num_envs", "type": int, "default": 0,
             "help": "Number of environments to create - override config file"},
