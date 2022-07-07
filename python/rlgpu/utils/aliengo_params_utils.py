@@ -108,9 +108,9 @@ def aliengo_params_helper(cfg, cfg_train, args):
     if args.base_x_vel_clip is not None:
         cfg['env']['reward']["base_x_vel"][1] = args.base_x_vel_clip
     if args.y_vel_pen is not None:
-        cfg['env']['reward']['y_vel_pen'] = args.y_vel_pen
+        cfg['env']['reward']['y_vel_pen'][0] = args.y_vel_pen
     if args.smoothness is not None:
-        cfg['env']['reward']['smoothness'] = args.smoothness
+        cfg['env']['reward']['smoothness'][0] = args.smoothness
 
     cfg['env']['curriculum_length'] = args.curriculum_length
     if args.curriculum_length != -1:
