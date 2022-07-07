@@ -102,6 +102,15 @@ def detect_workstation_id():
 def aliengo_params_helper(cfg, cfg_train, args):
     """Populate fields in the cfg files to avoid having to change things in
     multiple places."""
+    if args.base_x_vel_coef is not None:
+        cfg['env']['reward']["base_x_vel"][0] = args.base_x_vel_coef
+    if args.base_x_vel_clip is not None:
+        cfg['env']['reward']["base_x_vel"][1] = args.base_x_vel_clip
+    if args.y_vel_pen is not None:
+        cfg['env']['reward']['y_vel_pen'] = args.y_vel_pen
+    if args.smoothness is not None:
+        cfg['env']['reward']['smoothness'] = args.smoothness
+
     cfg['env']['curriculum_length'] = args.curriculum_length
     if args.curriculum_length != -1:
         assert args.adaptive_curriculum == -1

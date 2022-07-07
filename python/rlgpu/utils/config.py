@@ -420,6 +420,14 @@ def get_args(benchmark=False, use_rlg_config=False):
             "and change hyperparameters such that only the value function"
             "is trained for. This argument changes hyperparameters such as "
             "number of updates, num samples, batch size"},
+        {"name": "--base_x_vel_coef", "type": float,
+            "help": "For End-to-end sweep"},
+        {"name": "--base_x_vel_clip", "type": float,
+            "help": "For End-to-end sweep"},
+        {"name": "--y_vel_pen", "type": float,
+            "help": "For End-to-end sweep"},
+        {"name": "--smoothness", "type": float,
+            "help": "For End-to-end sweep"},
     ]
 
     if benchmark:
