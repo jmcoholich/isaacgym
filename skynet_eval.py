@@ -48,7 +48,7 @@ def main():
         # for i in range(num_runs):
         unique_name = job_nickname
         dep_slurm_args = [
-            "-o",  unique_name + ".log",
+            "-o",  'log/' + unique_name + ".log",
             "-J", unique_name
         ]
         cmd = ["sbatch"] + slurm_options + dep_slurm_args + ["eval_submit.sh"] \

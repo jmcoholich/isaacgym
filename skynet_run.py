@@ -18,6 +18,7 @@ def get_blacklist():
 
 def main():
     num_runs = 5
+    separate_instances = False  # if this is true, I will request 5 GPUS together and have one docker container for all seeds
     base_x_vel_coefs = [0.5, 1.0, 2.0]
     base_x_vel_clips = [0.125, 0.25, 0.5, 1.0]
     y_vel_pens = [0.05, 0.1, 0.2]
@@ -38,19 +39,22 @@ def main():
             "-A", "overcap",
             "--requeue",
             # "--constraint", "2080_ti|a40",
-            "--gres", "gpu:1",
-            "-x", get_blacklist(),
+            "--gres", f"gpu:{1 if separate_instances else num_runs}",
+            "-x", get_blacklist() + ',cortana,jill',
         ]
 
             # loop through random seeds
-        for i in range(num_runs):
-            unique_name = job_nickname + '__' + str(i)
+        for i in range(num_runs if separate_instances else 1):
+            unique_name = job_nickname
+            if separate_instances:
+                unique_name += '__' + str(i)
+                python_cmd += " --seed " + str(i)
             dep_slurm_args = [
-                "-o",  unique_name + ".log",
+                "-o",  "log/" + unique_name + ".log",
                 "-J", unique_name
             ]
             cmd = ["sbatch"] + slurm_options + dep_slurm_args + ["submit.sh"] \
-                + [python_cmd + " --seed " + str(i)] + [unique_name]
+                + [python_cmd] + [unique_name]
             print(" ".join(cmd))
             print()
             subprocess.run(cmd)
