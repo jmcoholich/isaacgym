@@ -20,6 +20,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
 import re
 import copy
+import numpy as np
 from math import log10, floor
 
 class CPU_Unpickler(pickle.Unpickler):
@@ -138,7 +139,82 @@ def print_latex_table(r):
 
 
 def generate_optimized_footstep_trajectories_plot(data, sota, args):
-    pass
+    max_footstep_traj_len = 20
+
+    xlb, xup = (-0.6, 0.6)
+    ylb, yup = (-0.8, 0.8)
+    k = 2.0
+    fig, _ = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(8 * k - 4.0, 5 * k))
+    # fig.subplots_adjust(wspace=0.5)
+    ax = plt.subplot(2, 3, 1)
+    ax.set_aspect("equal")
+    plt.grid()
+    plt.xlim(xlb, xup)
+    plt.ylim(ylb, yup)
+    #    [[ 0.2135, -0.1493],
+    #       [-0.2694,  0.1495]],
+
+    #      [[ 0.2134,  0.1494],
+    #       [-0.2693, -0.1492]]
+    ax.plot([-0.1493, 0.1495, 0.1494, -0.1492], [0.2135, -0.2694, 0.2134, -0.2693], 'kD')
+    ax.set_title('Fixed Targets')
+    im = plt.imread('plots/cutout_aliengo.png')
+    # The dimensions [left, bottom, width, height] of the new Axes. All quantities are in fractions of figure width and height.
+    newax = fig.add_axes([0.1815, 0.583, 0.21, 0.213], zorder=1, anchor="SW")
+    im[..., 3][im[..., 3].nonzero()] = 0.5  # adjust image transparency
+    newax.imshow(im)
+    newax.axis('off')
+    line_colors = [[0.5, 0.0, 0.0], [0.5, 0.5, 0.0], [0.0, 0.5, 0.0], [0.0, 0.0, 0.5]]
+    colors = torch.rand(max_footstep_traj_len, 3)
+
+    for subplot_idx, id_ in enumerate(data["Proposed Method"].keys(), 2):
+        x = data["Proposed Method"][id_]['in_place_opt']
+        footsteps = x["footstep_targets"]
+        env_idx = x["current_footstep"].argmax()
+        idcs = x["current_footstep"]
+        # plt.figure()
+        # for i in range(footsteps.shape[1]):
+        #     plt.scatter(footsteps[:, i, :, 1], footsteps[:, i, :, 0])
+        #     # plt.scatter(footsteps[0, i, :, 0], footsteps[0, i, :, 1])
+        # plt.axis("equal")
+        # plt.grid()
+        # plt.title("20 env footsteps scatter")
+
+        ax = plt.subplot(2, 3, subplot_idx)
+        alpha = torch.linspace(1, 0.5, 20)
+        color = torch.rand(1, 3)
+        last_footstep = np.zeros((4, 2))
+        for i in range(min(x["current_footstep"].min(), max_footstep_traj_len)):
+            # if i % 2 == 0:
+            # color = torch.rand(1, 3)
+            for j in range(2):
+                temp = footsteps[:, i, j]
+                x = -temp[..., 1].mean().cpu()
+                y = temp[..., 0].mean().cpu()
+                # plt.text(x, y, s=str(i))
+                ax.scatter(x, y,
+                    s=(temp[..., 0].var().cpu() + temp[..., 1].var().cpu() + 0.0001) / 2 * 1e5,
+                    c=colors[int(i // 2)].reshape(1, 3),
+                    alpha=alpha[i].item())
+                if i not in {0, 1}:
+                    # ax.plot([last_footstep[j + (i % 2) * 2, 0], x], [last_footstep[j + (i % 2) * 2, 1], y], color=line_colors[j + (i % 2) * 2])
+                    ax.arrow(last_footstep[j + (i % 2) * 2, 0], last_footstep[j + (i % 2) * 2, 1], x - last_footstep[j + (i % 2) * 2, 0], y - last_footstep[j + (i % 2) * 2, 1], color=line_colors[j + (i % 2) * 2], head_width=0.02, width=0.0025)
+                last_footstep[j + (i % 2) * 2, 0] = x
+                last_footstep[j + (i % 2) * 2, 1] = y
+        ax.set_aspect("equal")
+        ax.set_title(f'Seed {subplot_idx - 2}')
+        plt.grid()
+        plt.xlim(xlb, xup)
+        plt.ylim(ylb, yup)
+        # plt.xlim(-2.0, 2.0)
+        # plt.ylim(-2.0, 2.0)
+    fig.suptitle(f"Optimized Footstep Trajectories", y=0.95, fontsize="x-large")
+    fig.supxlabel("Footstep Y position (m)", y=0.05, fontsize="large")
+    fig.supylabel("Footstep X position (m)", x=0.05, fontsize="large")
+    path = os.path.join(args.save_dir, "optimized_footstep_trajectories" + '.svg')
+    plt.savefig(path, bbox_inches='tight')
+    plt.close()
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -237,6 +313,8 @@ def _load_and_process_data(path, method, checkpoint, env_key):
 
     if method != "End-to-end":
         output["footstep targets hit"] = x['current_footstep'] - 1
+        output['current_footstep'] = x['current_footstep']
+        output['footstep_targets'] = x['footstep_targets']
     return output, method, checkpoint, env_key
 
 

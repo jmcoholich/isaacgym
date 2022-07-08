@@ -1,11 +1,3 @@
-"""
-This is a script to submit <n_runs> sbatch jobs to slurm, instead of
-requesting n_runs gpus all on the same machine, which is harder to get.
-
-first arg =  number of runs
-second arg = python command for run
-third arg = name of runs
-"""
 import subprocess
 
 num_runs = 4
