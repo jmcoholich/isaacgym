@@ -12,13 +12,29 @@ def main():
     print("list of all nodes", node_list)
     blacklist = get_down_nodes()
     print("down nodes: ", blacklist)
-    checks = [docker_running, docker_nvidia_issue]  # list of function handles
-    for node in node_list:
-        if node in blacklist:
-            continue
-        print(f"checking node {node}")
-        if any(not check(node) for check in checks):
-            blacklist.append(node)
+    checks = [DockerRunningCheck, DockerNvidiaIssueCheck]  # list of function handles
+    check_objects = []
+    for check in checks:
+        for node in node_list:
+            if node in blacklist:
+                continue
+            # print(f"checking node {node}")
+            temp = check(node)
+            check_objects.append(temp)
+            print(temp)
+        print()
+        while check_objects:
+            time.sleep(2.0)
+            for check_object in check_objects:
+                output = check_object.check()
+                if output is None:
+                    continue
+                else:
+                    check_objects.remove(check_object)
+                    if not output:
+                        blacklist.append(check_object.node)
+            # if any(not check(node) for check in checks):
+            #     blacklist.append(node)
     blacklist.sort()
     print("blacklist obtained", blacklist)
     write_blist(blacklist)
@@ -35,36 +51,57 @@ def get_down_nodes():
     return node_list
 
 
-def docker_running(node):
-    cmd = [
-        "ssh",
-        "-o",
-        "StrictHostKeyChecking=no",
-        "jcoholich3@" + node + ".cc.gatech.edu",
-        "docker container ls",
-    ]
-    output, stderr = run_cmd(cmd)
-    if output == "":
-        return False
-    else:
-        return True
+class DockerRunningCheck:
+    def __init__(self, node):
+        cmd = [
+            "ssh",
+            "-o",
+            "StrictHostKeyChecking=no",
+            "jcoholich3@" + node + ".cc.gatech.edu",
+            "docker container ls",
+        ]
+        self.job = run_cmd_async(cmd)
+        self.node = node
+
+    def __repr__(self):
+        return f"Docker running check for node {self.node}"
+
+    def check(self):
+        if self.job.poll() is None:  # job is not finished
+            return None
+        else:
+            if not self.job.stdout.readlines():
+                return False
+            else:
+                return True
 
 
-def docker_nvidia_issue(node):
-    """Here is the solution to this issue: https://github.com/NVIDIA/nvidia-docker/issues/1243
-    I just can't fix things without root"""
-    cmd = [
-        "ssh",
-        "-o",
-        "StrictHostKeyChecking=no",
-        "jcoholich3@" + node + ".cc.gatech.edu",
-        "docker run --gpus all  nvidia/cuda:10.0-base nvidia-smi",
-    ]
-    out, err = run_cmd(cmd)
-    if out == "":
-        return False
-    else:
-        return True
+class DockerNvidiaIssueCheck:
+    def __init__(self, node):
+        """Here is the solution to this issue: https://github.com/NVIDIA/nvidia-docker/issues/1243
+        I just can't fix things without root"""
+        cmd = [
+            "ssh",
+            "-o",
+            "StrictHostKeyChecking=no",
+            "jcoholich3@" + node + ".cc.gatech.edu",
+            "docker run --gpus all  nvidia/cuda:10.0-base nvidia-smi",
+        ]
+        self.job = run_cmd_async(cmd)
+        self.node = node
+
+    def __repr__(self):
+        return f"Docker NVIDIA issue check for node {self.node}"
+
+    def check(self):
+        if self.job.poll() is None:  # job is not finished
+            return None
+        else:
+            if not self.job.stdout.readlines():
+                return False
+            else:
+                return True
+
 
 def write_blist(blacklist):
     with open("blacklisted_nodes.txt", "w") as f:
@@ -85,6 +122,10 @@ def get_node_list():
 def run_cmd(cmd):
     output = subprocess.run(cmd, capture_output=True, encoding="UTF-8")
     return output.stdout, output.stderr
+
+def run_cmd_async(cmd):
+    output = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    return output
 
 
 if __name__ == "__main__":
