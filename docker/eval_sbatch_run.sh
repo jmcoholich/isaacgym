@@ -7,6 +7,7 @@ docker run \
     --cpuset-cpus="$(taskset -c -p $$ | cut -f2 -d ':' | awk '{$1=$1};1')" \
     --name isaacgym_container_$2 \
     --mount type=bind,source=/nethome/jcoholich3/isaacgym/python/rlgpu/data,destination=/opt/isaacgym/python/rlgpu/data/ \
+    --mount type=bind,source=/nethome/jcoholich3/isaacgym/python/rlgpu/nn,destination=/opt/isaacgym/python/rlgpu/nn/ \
     isaacgym_$2 /opt/isaacgym/docker/eval_sbatch_docker_run.sh "$1" $3 $4 $5 $6
 
 echo Finished evaluation run, copying data now

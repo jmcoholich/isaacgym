@@ -26,7 +26,7 @@ def main():
     prod = list(itertools.product(base_x_vel_coefs, base_x_vel_clips, y_vel_pens, smoothnesses))
     random.seed(1)
     random.shuffle(prod)
-    for base_x_vel_coef, base_x_vel_clip, y_vel_pen, smoothness in prod[:1]:
+    for base_x_vel_coef, base_x_vel_clip, y_vel_pen, smoothness in prod[60:]:
         job_nickname = f"f_{base_x_vel_coef}_{base_x_vel_clip}_{y_vel_pen}_{smoothness}".replace('.', 'p')
         # python_cmd = "python rlg_train.py --cfg_env 12_F --cfg_train 12_large_net --wandb_project aliengo_12_F_sweep"
         python_cmd = ("python rlg_train.py --cfg_env 12_F --cfg_train 12_large_net --wandb_project aliengo_12_F_sweep "

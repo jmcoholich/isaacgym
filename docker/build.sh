@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# set -e
 set -u
 SCRIPTROOT="$( cd "$(dirname "$0")" ; pwd -P )"
 cd "${SCRIPTROOT}/../.."
