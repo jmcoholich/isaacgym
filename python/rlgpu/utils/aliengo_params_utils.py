@@ -79,7 +79,8 @@ def save_load_config_file_names(args):
     wandb.init(config=args, project=args.wandb_project,
                tags=[str(detect_workstation_id())],
                settings=wandb.Settings(_disable_stats=True),
-               name=args.wandb_run_name)
+               name=args.wandb_run_name,
+               mode='disabled' if args.play else 'run')
     return args
 
 
