@@ -52,6 +52,26 @@ def get_wandb_ids_from_run_name(name):
     return run_ids
 
 
+def get_num_runs_per_name():
+    """Return a list of run ids from a single run name string."""
+    names = {}
+
+    # first, get all the model names for the SOTA runs
+    api = wandb.Api()
+    runs = api.runs("jcoholich/aliengo_12_F_sweep")  # TODO
+
+    for run_ in runs:
+        if run_.name in names:
+            names[run_.name] += 1
+        else:
+            names[run_.name] = 1
+
+    for key, val in names.items():
+        if val > 5:
+            print(key)
+
+    return names
+
 def get_wandb_run_ids(names):
 
     run_ids = {}
@@ -122,5 +142,7 @@ def gpu_parallel_cmd_runner(cmds):
 
 
 if __name__ == "__main__":
-    print(get_ws_from_run_id(220422175144086636))
-    print(get_wandb_run_name_from_id(220422175144086636))
+    names = get_num_runs_per_name()
+    breakpoint()
+    # print(get_ws_from_run_id(220422175144086636))
+    # print(get_wandb_run_name_from_id(220422175144086636))
