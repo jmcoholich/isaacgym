@@ -18,7 +18,7 @@ def fname_parser(fname):
 
 def get_wandb_run_name_from_id(id):
     api = wandb.Api()
-    runs = api.runs("jcoholich/aliengo_12")
+    runs = api.runs("jcoholich/aliengo_12_F_sweep")  # TODO
     for run_ in runs:
         if run_.config["run_id"] == str(id):
             return run_.name
@@ -26,7 +26,7 @@ def get_wandb_run_name_from_id(id):
 
 def get_ws_from_run_id(id):
     api = wandb.Api()
-    runs = api.runs("jcoholich/aliengo_12")
+    runs = api.runs("jcoholich/aliengo_12_F_sweep")  # TODO
     for run_ in runs:
         if run_.config["run_id"] == str(id):
             return run_.tags[0]
@@ -38,7 +38,7 @@ def get_wandb_ids_from_run_name(name):
 
     # first, get all the model names for the SOTA runs
     api = wandb.Api()
-    runs = api.runs("jcoholich/aliengo_12")
+    runs = api.runs("jcoholich/aliengo_12_F_sweep")  # TODO
 
     for run_ in runs:
         if run_.name == name:
@@ -59,7 +59,7 @@ def get_wandb_run_ids(names):
 
     # first, get all the model names for the SOTA runs
     api = wandb.Api()
-    runs = api.runs("jcoholich/aliengo_12")
+    runs = api.runs("jcoholich/aliengo_12_F_sweep")  # TODO
 
     for run_ in runs:
         if run_.name in names.keys():

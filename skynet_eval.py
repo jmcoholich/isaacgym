@@ -20,13 +20,24 @@ def main():
     #     (50, 0.275, 0.1, 0.15),
     #     (75, 0.225, 0.1, 0.075),
     #     (75, 0.225, 0.1, 0.15)]
-    prod = [(150, 0.2, 0.2, 0.15)]
-    for cf, bs, nn_ft_dist, nn_ft_width in prod:
+    # prod = [(150, 0.2, 0.2, 0.15)]
+    # for cf, bs, nn_ft_dist, nn_ft_width in prod:
+    base_x_vel_coefs = [0.5, 1.0, 2.0]
+    base_x_vel_clips = [0.125, 0.25, 0.5, 1.0]
+    y_vel_pens = [0.05, 0.1, 0.2]
+    smoothnesses = [0.0, 0.03125, 0.0625]
+    prod = list(itertools.product(base_x_vel_coefs, base_x_vel_clips, y_vel_pens, smoothnesses))
+    random.seed(1)
+    random.shuffle(prod)
+    for base_x_vel_coef, base_x_vel_clip, y_vel_pen, smoothness in prod[:1]:
+        run_name = f"f_{base_x_vel_coef}_{base_x_vel_clip}_{y_vel_pen}_{smoothness}".replace('.', 'p')
         # run_name = "H ss state (0.2 rand new)"  # SOTA
         # run_name = "H new sota"
-        run_name = "F ss state final"
-        des_dir_coef = cf  # default: 50
-        search_box_len = bs  # default: 0.15
+        # run_name = "F ss state final"
+        des_dir_coef = -1  # NOTE dummy val # default: 50
+        search_box_len = -1  # NOTE dummy val # default: 0.15
+        nn_ft_dist = -1  # NOTE dummy val
+        nn_ft_width = -1  # NOTE dummy val
         job_nickname = f"eval_{run_name}".replace(" ", "").replace(".", "").replace("(", "").replace(")", "").lower()
         if run_name[0] == "H":
             job_nickname += "dd_" + str(des_dir_coef) + "_bb_" + str(search_box_len).replace(".", "_") + "_dist_" + str(nn_ft_dist).replace(".", "_") + "_width_" + str(nn_ft_width).replace(".", "_")
@@ -37,7 +48,7 @@ def main():
             "--cpus-per-gpu", "7",
             "-p", "overcap",
             "-A", "overcap",
-            "--constraint", "a40",
+            # "--constraint", "rtx_6000|a40",
             "--gres", "gpu:8",
             "--requeue",
             "-x", get_blacklist() + ",cortana,fiona",
