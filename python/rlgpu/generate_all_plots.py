@@ -22,6 +22,7 @@ import re
 import copy
 import numpy as np
 from math import log10, floor
+import hashlib
 
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
@@ -29,38 +30,170 @@ class CPU_Unpickler(pickle.Unpickler):
             return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
         else: return super().find_class(module, name)
 
+def get_data(sota, args):
+    """Steps
+    1. Load the all_data file
+    2. If all runs are in the all_data file, return the data I need
+    3. Otherwise, load the required runs and add them to the all_data file,
+    then return the relevent data.
+    """
+    names = sota
+    # all_runs = [name for name in os.listdir('data') if os.path.isdir(os.path.join('data', name))]
+    # for run in sorted(all_runs):
+    #     if "f_" in run and 'debug' not in run:
+    #         names[run] = run
+
+    # if args.run_name:
+    #     names = args.run_name.split(',')
+    #     names = [name.rstrip().lstrip() for name in names]
+    #     if any(name in sota.values() for name in names):
+    #         raise ValueError("run_name is already in SOTA")
+    #     else:
+    #         for name in names:
+    #             names[name] = name
+    all_data = load_all_data_file()
+    need_to_load = {}
+    for name in names.values():
+        if name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "") not in all_data:
+            need_to_load[name] = name
+    if need_to_load:
+        raise NotImplementedError()
+        print(f"Need to load {len(need_to_load)} additional runs...")
+        extra_data = parallel_load_relevent_data(need_to_load)
+
+    output_data = {}
+    # return just the data for the runs that I actually need
+    for key, value in names.items():
+        output_data[key] = all_data[value.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "")]
+    return output_data
+
 
 def main():
 
     sota = {
-        # "Proposed Method" : "H ss state (0.2 rand new)",
+        # "OLD Proposed Method" : "H ss state (0.2 rand new)",
         # "Proposed Method" : "H_new_sotadd_75_bb_0_225_dist_0_1_width_0_075",
         "Proposed Method" : "H_new_sotadd_75_bb_0_225_dist_0_1_width_0_15",
-        "End-to-end": "F ss state final",
+        # "OLD End-to-end" : "F ss state final",
+        # "f_0p5_1p0_0p1_0p0625": "f_0p5_1p0_0p1_0p0625",
+        "End-to-end": "f_0p5_1p0_0p2_0p03125",
+        # "f_1p0_0p5_0p2_0p03125": "f_1p0_0p5_0p2_0p03125",
     }
     args = get_args()
+    if args.regen_data_file:
+        regen_data_file()
     random_id = str(torch.randint(1000000, (1,)).item())
     if not os.path.exists("plots"):
         os.makedirs("plots")
     save_dir = os.path.join("plots", random_id)
-    os.mkdir(save_dir)
     args.save_dir = save_dir
-    # s = time.time()
-    # data = load_relevent_data(sota, args)
-    e = time.time()
-    # print(f"Serial loading took {e - s :.2f} seconds")
-    # sota = {
-    #     "Proposed Method" : "H ss state (0.2 rand new)",
-    #     "End-to-end": "F ss state final",
-    # }
-    data = parallel_load_relevent_data(sota, args)
-    # data_copy = copy.deepcopy(data)
-    print(f"Parallel loading took {time.time() - e :.2f} seconds")
-    # sys.exit()
+    data = get_data(sota, args)
+    if args.score_runs:
+        score_runs(data, sota, args, "End-to-end")
+    os.mkdir(save_dir)
     generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
+    generate_success_only_plot(data, sota, args)
     generate_in_place_results_table(data, sota, args)
     generate_optimized_footstep_trajectories_plot(data, sota, args)
+
+
+def score_runs(data, sota, args, baseline_run_name):
+    """Given a baseline run, score runs based on how many environments they
+    have a higher success rate than the baseline on."""
+    scores = {}
+    envs_to_plot = ['flatground',
+        (.25, 0.0),  # (percent infill, stepping stone height variation)
+        (.375, 0.0),
+        (.50, 0.0),
+        (.625, 0.0),
+        (.75, 0.0),
+        (.875, 0.0),
+        (1.0, 0.0),
+
+        (.25, 0.05),
+        (.375, 0.05),
+        (.50, 0.05),
+        (.625, 0.05),
+        (.75, 0.05),
+        (.875, 0.05),
+        (1.0, 0.05),
+
+        (.25, 0.1),
+        (.375, 0.1),
+        (.50, 0.1),
+        (.625, 0.1),
+        (.75, 0.1),
+        (.875, 0.1),
+        (1.0, 0.1),
+    ]
+    baseline_scores = {}
+    temp = avg_across_seeds(data[baseline_run_name], 'successful')
+    for env in envs_to_plot:
+        baseline_scores[env] = temp[env]["mean"]
+    for method in data.keys():
+        temp = avg_across_seeds(data[method], 'successful')
+        score = 0
+        for env in envs_to_plot:
+            if temp[env]["mean"] > baseline_scores[env]:
+                score += 1
+        if score in scores:
+            scores[score].append(method)
+        else:
+            scores[score] = [method]
+    total = 0
+    for score in sorted(scores.keys()):
+        print(f"Score {score}: {len(scores[score])} runs")
+        total += len(scores[score])
+    print(total)
+    print()
+    print("Top Scoring runs")
+    for score in reversed(sorted(scores.keys())[-3:]):
+        print(f"Score {score}: {scores[score]}")
+    sys.exit()
+
+
+def generate_success_only_plot(data, sota, args):
+    envs_to_plot = [
+        (.25, 0.0),  # (percent infill, stepping stone height variation)
+        (.375, 0.0),
+        (.50, 0.0),
+        (.625, 0.0),
+        (.75, 0.0),
+        (.875, 0.0),
+        (1.0, 0.0),
+
+        (.25, 0.05),
+        (.375, 0.05),
+        (.50, 0.05),
+        (.625, 0.05),
+        (.75, 0.05),
+        (.875, 0.05),
+        (1.0, 0.05),
+
+        (.25, 0.1),
+        (.375, 0.1),
+        (.50, 0.1),
+        (.625, 0.1),
+        (.75, 0.1),
+        (.875, 0.1),
+        (1.0, 0.1),
+    ]
+    metric = "successful"
+    figsize = (20.0, 5.0)
+    name = "largeplot"
+    _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+
+
+def generate_small_plot(data, sota, args):
+    envs_to_plot = [
+        (1.0, 0.0), (0.75, 0.0), (0.5, 0.0), (0.25, 0.0),
+        (1.0, 0.1), (0.75, 0.1), (0.5, 0.1), (0.25, 0.1)
+    ]
+    metric = "successful"
+    figsize = (5.0, 2.5)
+    name = "smallplot"
+    _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
 
 
 def generate_in_place_results_table(data, sota, args):
@@ -223,35 +356,91 @@ def get_args():
     #                    help="This is the id of the run to evalute.")
     parser.add_argument("--run_name", type=str,
                        help="If passed, add this to plots in addition to H and F SOTA.")
+    parser.add_argument("--regen_data_file", action='store_true',
+                       help="Regenerate the condensed datafile")
+    parser.add_argument("--score_runs", action='store_true',
+                       help="score runs compared to a baseline")
+    # parser.add_argument("--load_data", action="store_true",
+    #                    help="If passed, add this to plots in addition to H and F SOTA.")
+    # parser.add_argument("--load_data", action="store_true",
+    #                    help="If passed, add this to plots in addition to H and F SOTA.")
+    # parser.add_argument("--save_data", action="store_true",
+    #                    help="If passed, add this to plots in addition to H and F SOTA.")
     return parser.parse_args()
 
 
-def parallel_load_relevent_data(sota, args):
-    """load data relevent to the main performance super plot"""
-    names_to_analyze = sota
-    # all_runs = os.listdir("data")
-    # for run in all_runs:
-    #     if "H_new_sotadd" in run:
-    #         names_to_analyze[run] = run
-    if args.run_name:
-        names = args.run_name.split(',')
-        names = [name.rstrip().lstrip() for name in names]
-        if any(name in sota.values() for name in names):
-            raise ValueError("run_name is already in SOTA")
-        else:
-            for name in names:
-                names_to_analyze[name] = name
+# def save_data_file(names_to_analyze, data):
+#     """Each data file is uniquely identified by the hash of the dict values."""
+#     fname = str(_hash(names_to_analyze.values())) + '.pgz'
+#     path = os.path.join('data', fname)
+#     # if os.path.exists(path):
+#     #     ans = input("Save file already exists. Overwrite? (y/n)")
+#     #     if ans != 'y':
+#     #         print('skipping save...')
+#     #         return
+#     print(f"Saving data file at {path}")
+#     with gzip.GzipFile(path, 'w') as f:
+#         pickle.dump(data, f)
 
-    # first populate the data
+
+# def _hash(values):
+#     x = hashlib.md5(bytes(str(values), 'utf-8'))
+#     return x.hexdigest()
+
+
+# def load_data_file(names_to_analyze):
+#     """Each data file is uniquely identified by the hash of the dict values."""
+#     fname = str(_hash(names_to_analyze.values())) + '.pgz'
+#     path = os.path.join('data', fname)
+#     if not os.path.exists(path):
+#         print(f'\nLoading {len(names_to_analyze)} runs from scratch...\n')
+#         return None
+#     print(f'found saved data file. loading {path}')
+#     with gzip.GzipFile(path, 'r') as f:
+#         data = CPU_Unpickler(f).load()
+#     return data
+
+def regen_data_file():
+    all_runs = [name for name in os.listdir('data') if os.path.isdir(os.path.join('data', name))]
+    names = {}
+    for run in all_runs:
+        names[run] = run
+    fname = 'all_data.pgz'
+    data = parallel_load_relevent_data(names)
+    path = os.path.join('data', fname)
+    print(f"Saving data file at {path}")
+    with gzip.GzipFile(path, 'w') as f:
+        pickle.dump(data, f)
+    print(f"Saved. Exiting now")
+    sys.exit()
+
+
+def load_all_data_file():
+    """Each data file is uniquely identified by the hash of the dict values."""
+    fname = 'all_data.pgz'
+    path = os.path.join('data', fname)
+    print(f'Loading {path}')
+    s = time.time()
+    with gzip.GzipFile(path, 'r') as f:
+        data = CPU_Unpickler(f).load()
+    print(f"{path} loaded in {time.time() - s:.2f} seconds")
+    return data
+
+
+def parallel_load_relevent_data(names):
+    """load data relevent to the main performance super plot"""
+    s = time.time()
+    print(f"\nLoading data for {len(names)} runs.")
+
     data = {}
     futures = []
     with ThreadPoolExecutor() as executor:
         # future = executor.submit(pow, 323, 1235)
         # print(future.result())
 
-        for method in names_to_analyze:
+        for method in names:
             data[method] = {}
-            data_dir = os.path.join("data", names_to_analyze[method].replace(" ", "_").replace("(", "").replace(")", "").replace(".", ""))
+            data_dir = os.path.join("data", names[method].replace(" ", "_").replace("(", "").replace(")", "").replace(".", ""))
             all_files = os.listdir(data_dir)
             relevant_files = []
             for file in all_files:
@@ -272,9 +461,9 @@ def parallel_load_relevent_data(sota, args):
                     #     heightvar = float(file_parts[file_parts.index("--ss_height_var") + 1])
                     #     infill = float(file_parts[file_parts.index("--ss_infill") + 1])
                     #     env_key = (infill, heightvar)
-                    # elif names_to_analyze[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
+                    # elif names[method][0] == "H" and all(x in file_parts for x in ["--no_ss", "--plot_values", "--des_dir_coef", "--des_dir"]):  # this is the special case for the flatground run
                     #     env_key = "flatground"
-                    # elif names_to_analyze[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
+                    # elif names[method][0] == "F" and all(x in file_parts for x in ["--no_ss"]):
                     #     env_key = "flatground"
                     # elif len(file_parts) == 2:  # special case for getting training reward to normalize stats by
                     #     env_key = "training_rew"
@@ -293,11 +482,15 @@ def parallel_load_relevent_data(sota, args):
 
                 path = os.path.join(data_dir, file)
                 futures.append(executor.submit(_load_and_process_data, path, method, checkpoint, env_key))
+                # for serial execution
+                # output, method, checkpoint, env_key = _load_and_process_data(path, method, checkpoint, env_key)
+                # data[method][checkpoint][env_key] = output
 
         for future in as_completed(futures):
             output, method, checkpoint, env_key = future.result()
             data[method][checkpoint][env_key] = output
 
+    print(f"Loaded data in {time.time() - s :.2f} seconds\n")
     return data
 
 
@@ -311,7 +504,7 @@ def _load_and_process_data(path, method, checkpoint, env_key):
     idx = output["eps_len"] - 1
     output["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
 
-    if method != "End-to-end":
+    if method == "Proposed Method" or method[0] == "H":
         output["footstep targets hit"] = x['current_footstep'] - 1
         output['current_footstep'] = x['current_footstep']
         output['footstep_targets'] = x['footstep_targets']
@@ -380,7 +573,7 @@ def generate_sup_plot(data, sota, args):
         for method in data:
             vals = avg_across_seeds(data[method], metric, floats=True)
             fg_data = vals.pop("flatground")
-            if method != "End-to-end":
+            if method == "Proposed Method" or method[0] == "H":
                 for other_metric in ['in_place_rand', 'in_place_opt', 'in_place_fixed']:
                     vals.pop(other_metric)
             # sort into something that I can plot
@@ -422,7 +615,7 @@ def generate_sup_plot(data, sota, args):
             ax.set_title("Episode Length")
             ax.set_ylabel("Episode Length (timesteps)")
     handles, labels = ax.get_legend_handles_labels()
-    if args.run_name:
+    if len(data) > 2:
         fig.legend(handles, labels, bbox_to_anchor=(1.25, 0.9))
     else:
         fig.legend(handles, labels, loc=(0.775, 0.9125))
@@ -435,17 +628,12 @@ def generate_sup_plot(data, sota, args):
     print(f"Saved plot at {path}")
 
 
-def generate_small_plot(data, sota, args):
+def _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name):
     """Generate small plot of just success rate on a more limited sweep
     of environments
     """
-    envs_to_plot = [
-        (1.0, 0.0), (0.75, 0.0), (0.5, 0.0), (0.25, 0.0),
-        (1.0, 0.1), (0.75, 0.1), (0.5, 0.1), (0.25, 0.1)
-    ]
 
-    metric = "successful"
-    plt.figure(figsize=(5.0, 2.5))
+    plt.figure(figsize=figsize)
     plt.xlabel("Stepping Stone Density / Stone Height Variation (m)", y=-0.025)
     plt.title("Proposed Method vs End-to-end Policy", y=0.95, x=0.5)
     ax = plt.gca()
@@ -497,7 +685,7 @@ def generate_small_plot(data, sota, args):
     # if not os.path.exists("plots"):
     #     os.makedirs("plots")
     # path = "plots/" + "smallplot" + '.svg'
-    path = os.path.join(args.save_dir, "smallplot.svg")
+    path = os.path.join(args.save_dir, name + ".svg")
     plt.savefig(path, bbox_inches='tight')
     print(f"Saved plot at {path}")
 
