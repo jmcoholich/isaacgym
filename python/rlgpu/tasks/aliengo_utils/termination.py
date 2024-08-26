@@ -17,7 +17,10 @@ class Terminiations:
             "out_of_stepping_stones": self.out_of_stepping_stones,
         }
 
-        assert all(part in self.conditions.keys() for part in self.cfg.keys())
+        # assert all(part in self.conditions.keys() for part in self.cfg.keys())
+        for part in self.cfg.keys():
+            if part not in self.conditions.keys():
+                raise ValueError(f"Termination condition {part} not found in available conditions")
 
         if self.task.is_stepping_stones:
             if isinstance(self.task.cfg['stepping_stones']['height_range'], float):

@@ -43,17 +43,38 @@ To install an NVIDIA driver
     cd ~
     git clone https://github.gatech.edu/jcoholich3/isaacgym.git
     cd isaacgym
-    ./create_conda_env_rlgpu.sh
+    conda env create -f python/rlgpu_conda_env.yml
     conda activate rlgpu
+    cd python
+    pip install -e .
     cd ~
-    git clone https://github.gatech.edu/jcoholich3/rl_games.git
+    git clone git@github.com:jmcoholich/rl_games.git
     cd rl_games
     pip install -e .
+
+## Probable Issues
+`ImportError: libpython3.7m.so.1.0: cannot open shared object file: No such file or directory` can be solved by adding the following to your `~/.bashrc` file:
+
+```export LD_LIBRARY_PATH=/home/username/miniforge3/envs/rlgpu/lib```
+
+miniforge3 is used because I am using mamba instead of conda (highly recommended).
+
+Utilities like `nano` or `watch` result in segmentation fault.
+
+```
+cd /home/jcoholich/username/envs/rlgpu/lib
+rm libtinfo*
+rm libncursesw*
+```
 
 ## To test installation
 
     cd ~/isaacgym/python/examples
     python joint_monkey.py
+
+## To run training
+
+```python rlg_train.py --cfg_env 12_H_new_sota --seed 0 --device 1 --cfg_train 12 --headless```
 
 ## Running on Skynet (Docker required due to Skynet using Ubuntu 16.04)
 

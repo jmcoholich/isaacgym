@@ -83,12 +83,16 @@ class Observation():
             # 'constant_one': (self.get_one, 1),
             # 'one_joint_only': (self.get_one_joint_only, 1),
 
-            # 'start_token': (self.get_start_token, 1),
+            'start_token': (self.get_start_token, 1),
             # 'previous_observation': (None, None),
             # 'previous_action': (None, None),
 
         }
-        assert all(part in self.handles.keys() for part in parts)
+        # assert all(part in self.handles.keys() for part in parts)
+        for part in parts:
+            if part not in self.handles.keys():
+                raise ValueError(f"Part {part} not in observation handles.")
+
         # ensure env is invariant to order of obs parts listed in config file
         self.parts.sort()
 
@@ -333,8 +337,8 @@ class Observation():
     def get_vision(self):
         return self.task.cam_obs
 
-    # def get_start_token(self):
-    #     return np.array([float(self.env.eps_step_counter == 0)])
+    def get_start_token(self):
+        return np.array([float(self.env.eps_step_counter == 0)])
 
     # def get_base_velocity(self):
     #     return self.quadruped.base_vel

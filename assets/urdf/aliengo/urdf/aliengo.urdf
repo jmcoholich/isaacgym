@@ -158,7 +158,7 @@
     <child link="FR_thigh"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0" friction="0"/>
-    <limit effort="44.4" velocity="40"/>
+    <limit effort="44.4" velocity="40" upper="1.570795" lower="-1.570795"/>
   </joint>
   <link name="FR_thigh">
     <visual>
@@ -310,7 +310,7 @@
     <child link="FL_thigh"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0" friction="0"/>
-    <limit effort="44.4" velocity="40"/>
+    <limit effort="44.4" velocity="40" upper="1.570795" lower="-1.570795"/>
   </joint>
   <link name="FL_thigh">
     <visual>
@@ -462,7 +462,7 @@
     <child link="RR_thigh"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0" friction="0"/>
-    <limit effort="44.4" velocity="40"/>
+    <limit effort="44.4" velocity="40" upper="1.570795" lower="-1.570795"/>
   </joint>
   <link name="RR_thigh">
     <visual>
@@ -614,7 +614,7 @@
     <child link="RL_thigh"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0" friction="0"/>
-    <limit effort="44.4" velocity="40"/>
+    <limit effort="44.4" velocity="40" upper="1.570795" lower="-1.570795"/>
   </joint>
   <link name="RL_thigh">
     <visual>

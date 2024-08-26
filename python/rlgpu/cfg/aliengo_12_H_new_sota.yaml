@@ -1,7 +1,7 @@
 # Trains the low-level on flatground with pmtg
 
 env:
-  numEnvs: 3333
+  numEnvs: 4000
   envSpacing: 4.0
   numActions: 15
   actionSpace: pmtg  # can either be 'pmtg', 'pmtg_delta', 'joints', 'foot_positions'
@@ -13,8 +13,8 @@ env:
   # joint_angle_ub: [ 1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048, 3.14159  , -0.64577182]
   foot_pos_lb: [-0.5, -0.5, -0.6]
   foot_pos_ub: [0.5, 0.5, -0.1]
-  joint_stiffness: 2000
-  joint_damping: 100
+  joint_stiffness: 100
+  joint_damping: 5
   termination:
     base_z: [0.1, 0.8]  # the height bounds are overridden if there are stepping stones or terrain
     euler_angles: [0.5, 0.5, 1.0]  # in multiples of pi
@@ -85,7 +85,7 @@ env:
 
   # vision: # automatically gets added to observation if not commented out
   #   size: 128  # only support square images for now
-  obs_noise: True
+  obs_noise: False
   observation:
     # - base_position
     - base_roll
