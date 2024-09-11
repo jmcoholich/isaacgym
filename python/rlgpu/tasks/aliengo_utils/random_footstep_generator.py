@@ -240,12 +240,7 @@ class RandomFootstepGenerator:
         return (unit_vec * foot_vels).sum(-1)
 
     def out_of_footsteps(self):
-        """We return timeout once the current footstep is the last
-        footstep in the sequence, not once the last footstep is hit.
-        This avoids indexing errors and prevents needing to generate
-        a bogus observation on the last step."""
-        # assert (self.current_footstep <= self.cfg['n_cycles'] * 4).all()
-        return self.current_footstep == (self.cfg['n_cycles'] + 1) * 2 - 2
+        return self.current_footstep == self.cfg['n_cycles'] - 2
 
     def no_footstep_in(self, no_footstep_timeout):
         return (self.counter - self.last_time_hit_footstep) >= no_footstep_timeout
