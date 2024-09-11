@@ -16,6 +16,7 @@ from rlgpu.tasks.shadow_hand import ShadowHand
 from rlgpu.tasks.ingenuity import Ingenuity
 from rlgpu.tasks.anymal import Anymal
 from rlgpu.tasks.aliengo import Aliengo
+from rlgpu.tasks.aliengo_random import AliengoRandom
 from rlgpu.tasks.base.vec_task import VecTaskCPU, VecTaskGPU, VecTaskPython
 
 from rlgpu.utils.config import warn_task_name

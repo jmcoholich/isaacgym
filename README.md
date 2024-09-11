@@ -62,7 +62,7 @@ miniforge3 is used because I am using mamba instead of conda (highly recommended
 Utilities like `nano` or `watch` result in segmentation fault.
 
 ```
-cd /home/jcoholich/username/envs/rlgpu/lib
+cd /home/username/miniforge3/envs/rlgpu/lib
 rm libtinfo*
 rm libncursesw*
 ```

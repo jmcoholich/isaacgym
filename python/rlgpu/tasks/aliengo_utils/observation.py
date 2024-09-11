@@ -41,6 +41,7 @@ class Observation():
             'trajectory_generator_phase': (self.get_tg_phase, 2, None),
             'foot_contact_binary': (self.get_foot_contact_binary, 4, None),
             'footstep_target_distance': (self.get_footstep_target_distance, 8, None),
+            'footstep_target_distance_random': (self.get_footstep_target_distance_random, 16, None),
             'footstep_target_distance_2_ahead': (self.get_footstep_target_distance_2_ahead, 12, None),
             'footstep_target_distance_2_ahead_alt': (self.get_footstep_target_distance_2_ahead_alt, 16, None),
             'high_level_foot': (self.get_high_level_foot, 4, None),
@@ -246,6 +247,11 @@ class Observation():
         return output
 
     def get_footstep_target_distance(self):
+        # if self.ignore_footstep_targets:
+        #     return torch.zeros(self.num_envs, 12, device=self.device)
+        return self.task.footstep_generator.get_footstep_target_distance()
+
+    def get_footstep_target_distance_random(self):
         # if self.ignore_footstep_targets:
         #     return torch.zeros(self.num_envs, 12, device=self.device)
         return self.task.footstep_generator.get_footstep_target_distance()

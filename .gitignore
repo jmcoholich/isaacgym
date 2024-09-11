@@ -12,6 +12,7 @@ __pycache__/
 python/rlgpu/tasks/__pycache__/
 python/rlgpu/wandb/
 python/rlgpu/nn/
+wandb/
 *.py[cod]
 *$py.class
 *.cpython-37.pyc

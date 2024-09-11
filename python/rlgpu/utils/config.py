@@ -27,7 +27,7 @@ def set_np_formatting():
 
 def warn_task_name():
     raise Exception(
-        "Unrecognized task!\nTask should be one of: [BallBalance, Cartpole, CartpoleYUp, Ant, Humanoid, Anymal, FrankaCabinet, Quadcopter, ShadowHand, ShadowHandLSTM, ShadowHandFFOpenAI, ShadowHandFFOpenAITest, ShadowHandOpenAI, ShadowHandOpenAITest, Ingenuity, Aliengo]")
+        "Unrecognized task!\nTask should be one of: [BallBalance, Cartpole, CartpoleYUp, Ant, Humanoid, Anymal, FrankaCabinet, Quadcopter, ShadowHand, ShadowHandLSTM, ShadowHandFFOpenAI, ShadowHandFFOpenAITest, ShadowHandOpenAI, ShadowHandOpenAITest, Ingenuity, Aliengo, AliengoRandom]")
 
 
 def set_seed(seed, torch_deterministic=False):
@@ -98,7 +98,7 @@ def retrieve_cfg(args, use_rlg_config=False):
             return os.path.join(args.logdir, "shadow_hand"), "cfg/train/rlg/rlg_shadow_hand_asymm_lstm.yaml", "cfg/shadow_hand_test.yaml"
         elif args.task == "Ingenuity":
             return os.path.join(args.logdir, "ingenuity"), "cfg/train/rlg/rlg_ingenuity.yaml", "cfg/ingenuity.yaml"
-        elif args.task == "Aliengo":
+        elif args.task in ["Aliengo", "AliengoRandom"]:
             return os.path.join(args.logdir, "aliengo"), "cfg/train/rlg/rlg_aliengo.yaml", "cfg/aliengo.yaml"
         else:
             warn_task_name()
@@ -129,7 +129,7 @@ def retrieve_cfg(args, use_rlg_config=False):
             return os.path.join(args.logdir, "shadow_hand"), "cfg/train/rlpt/pytorch_ppo_shadow_hand.yaml", "cfg/shadow_hand_test.yaml"
         elif args.task == "Ingenuity":
             return os.path.join(args.logdir, "ingenuity"), "cfg/train/rlpt/pytorch_ppo_ingenuity.yaml", "cfg/ingenuity.yaml"
-        elif args.task == "Aliengo":
+        elif args.task in ["Aliengo", "AliengoRandom"]:
             return os.path.join(args.logdir, "aliengo"), "cfg/train/rlpt/pytorch_ppo_aliengo.yaml", "cfg/aliengo.yaml"
         else:
             warn_task_name()
@@ -150,7 +150,7 @@ def load_cfg(args, use_rlg_config=False):
     with open(path, 'r') as f:
         cfg = yaml.load(f, Loader=yaml.SafeLoader)
 
-    if args.task == "Aliengo":
+    if args.task in ["Aliengo", "AliengoRandom"]:
         cfg, cfg_train, args = aliengo_params_helper(cfg, cfg_train, args)
 
     # Override number of environments if passed on the command line
