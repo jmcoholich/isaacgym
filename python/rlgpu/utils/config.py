@@ -429,6 +429,8 @@ def get_args(benchmark=False, use_rlg_config=False):
             "help": "For End-to-end sweep"},
         {"name": "--smoothness", "type": float,
             "help": "For End-to-end sweep"},
+        {"name": "--plot_all_targets", "action": "store_true",
+            "help": "Plot entire sequence of footstep targets, instead of just the current active ones."},
     ]
 
     if benchmark:

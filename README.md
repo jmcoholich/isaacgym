@@ -52,7 +52,13 @@ To install an NVIDIA driver
     cd rl_games
     pip install -e .
 
-## Probable Issues
+## To test installation
+
+    cd ~/isaacgym/python/examples
+    python joint_monkey.py
+
+### Known Issues
+
 `ImportError: libpython3.7m.so.1.0: cannot open shared object file: No such file or directory` can be solved by adding the following to your `~/.bashrc` file:
 
 ```export LD_LIBRARY_PATH=/home/username/miniforge3/envs/rlgpu/lib```
@@ -67,16 +73,36 @@ rm libtinfo*
 rm libncursesw*
 ```
 
-## To test installation
-
-    cd ~/isaacgym/python/examples
-    python joint_monkey.py
-
 ## To run training
-
+### Old method
 ```python rlg_train.py --cfg_env 12_H_new_sota --seed 0 --device 1 --cfg_train 12 --headless```
 
-## Running on Skynet (Docker required due to Skynet using Ubuntu 16.04)
+Playback trained policy
+
+```python rlg_train.py --play --checkpoint <run ID>```
+
+### New Stuff
+```rlg_train.py --cfg_env 12_H_new_experiment --seed 1 --device 1 --cfg_train 12 --task AliengoRandom --headless```
+
+Playback trained policy
+
+```python rlg_train.py --play --checkpoint <run ID> --task AliengoRandom```
+
+To plot footstep targets add the flag `-asdf`
+
+To debug device-side asserts, switch to CPU pipeline with the flag `--pipline cpu`. This results in an actual stack trace.
+
+## Generalization/ High-level evaluation
+
+### Old high-level evaluation
+
+
+### New Evaluation
+
+TODO
+
+
+<!-- ## Running on Skynet (Docker required due to Skynet using Ubuntu 16.04)
 
 In a screens or tmux session, check out a node with:
 
@@ -125,4 +151,4 @@ and runs docker/sbatch_docker_run.sh in it then cleans everything
 up after sbatch_docker_run.sh finishes.
 
 sbatch_docker_run.sh has the actual python command to start the training run.
-Edit this script to change the python command.
+Edit this script to change the python command. -->

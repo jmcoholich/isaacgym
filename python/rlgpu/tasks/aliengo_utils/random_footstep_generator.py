@@ -11,21 +11,6 @@ class RandomFootstepGenerator:
     def __init__(self, task):
         self.device = task.device
 
-        # these are in walking order (legacy from walk_footstep_generator.py)
-        # self.starting_foot_pos = torch.tensor(
-        #     [[-0.2694, 0.1495, 0.0285],  # RL
-        #      [0.2134, 0.1494, 0.0285],  # FL
-        #      [-0.2693, -0.1492, 0.0285],  # RR
-        #      [0.2135, -0.1493, 0.0285]],  # FR
-        #     device=self.device)
-
-        # self.starting_foot_pos = torch.tensor(
-        #     [[-0.2694, 0.1495, 0.0285],  # RL
-        #      [0.2134, 0.1494, 0.0285],  # FL
-        #      [-0.2693, -0.1492, 0.0285],  # RR
-        #      [0.2135, -0.1493, 0.0285]],  # FR
-        #     device=self.device)
-
         # these are in foot idx order
         self.starting_foot_pos= torch.tensor(
             [[0.2134, 0.1494, 0.0285],  # FL
@@ -93,125 +78,29 @@ class RandomFootstepGenerator:
             footsteps[:, i, foot_to_move, 1] += y_perturb
         return footsteps
 
-
-        # """Stochastically generate footsteps for a trotting gait.
-        # FR and RL will be first up for hitting targets.
-        # The self.footsteps tensor is 4 dimensional where the dimensions are
-        # (envs, footstep pair idx, footstep idx within pair, xy of target)
-        # The footstep pairs alternate between (FL, RR) and (FR, RL). The
-        # front foot is index 0 within the pair, the rear foot is idx 1.
-        # """
-        # num_to_gen = len(env_ids)
-        # # dimensions are (envs, num_footsteps, two feet, xy)
-        # footsteps = torch.zeros(num_to_gen, 2, 2, 2, device=self.device)
-        # # each footstep is an x, y, z position
-        # step_len = (self.cfg['step_length'] * self.curr
-        #             + ((torch.rand(num_to_gen, device=self.device) - 0.5)
-        #                * self.cfg['step_length_rand'] * self.curr))
-
-
-        # # step_len = (self.cfg['step_length']
-        # #             + ((torch.rand(num_to_gen, device=self.device) - 0.5)
-        # #                * self.cfg['step_length_rand']))
-
-
-        # # width = (self.cfg['step_width']
-        # #          + ((torch.rand(num_to_gen, device=self.device) - 0.5)
-        # #             * self.cfg['step_width_rand']))
-        # # length = self.cfg['base_length']
-        # # len_offset = self.cfg['length_offset']
-
-        # starting_foot_pos = self.starting_foot_pos[..., :2].clone()
-
-        # footsteps[:, 0, 0] = starting_foot_pos[1]  # should be FL
-        # footsteps[:, 0, 1] = starting_foot_pos[2]  # should be RR
-
-        # footsteps[:, 1, 0] = starting_foot_pos[3]  # should be FR
-        # footsteps[:, 1, 1] = starting_foot_pos[0]  # should be RL
-
-        # footsteps = footsteps.tile(1, self.cfg['n_cycles'] + 1, 1, 1)
-
-        # headings = ((torch.rand(num_to_gen, device=self.device) - 0.5)
-        #             * (self.cfg['radial_range'][1] - self.cfg['radial_range'][0])
-        #             + (self.cfg['radial_range'][1] + self.cfg['radial_range'][0])
-        #             / 2.0) * 3.1415926 / 180.0
-        # x_addition = torch.arange(
-        #     (self.cfg['n_cycles'] + 1) * 2 - 1,
-        #     device=self.device).unsqueeze(-1) * step_len.view(num_to_gen, 1, 1)
-        # y_addition = torch.arange(
-        #     (self.cfg['n_cycles'] + 1) * 2 - 1,
-        #     device=self.device).unsqueeze(-1) * step_len.view(num_to_gen, 1, 1)
-        # footsteps[:, 1:, :, 0] += x_addition * torch.cos(headings).unsqueeze(-1).unsqueeze(-1)
-        # footsteps[:, 1:, :, 1] += y_addition * torch.sin(headings).unsqueeze(-1).unsqueeze(-1)
-
-        # # linearly increase randomization for the first n footsteps
-        # full_rand_by_footstep_num = 10
-        # schedule = torch.linspace(0, 1, full_rand_by_footstep_num,
-        #     device=self.device).view(1, full_rand_by_footstep_num, 1, 1)
-        # noise = (torch.rand_like(footsteps) - 0.5) * self.cfg['footstep_rand']
-        # noise[:, :full_rand_by_footstep_num] *= schedule
-        # footsteps[:] += noise
-        # return footsteps
-
-    def plot_footstep_targets(self, current_only=False):
-        hit_so_far = self.task.args.plot_values
-        plot_next_next = (self.task.args.plot_values
-            and 'footstep_target_distance' not in self.task.observe.parts)  # if we are doing 2 ahead
-
-        if self.task.is_stepping_stones:
-            add_height = self.task.cfg['stepping_stones']['height']
-        elif self.task.is_rough_terrain_blocks:
-            add_height = self.task.cfg['rough_terrain_blocks']['height']
-        else:
-            add_height = 0
-
-        if current_only:
-            num_cycles = 1
-        else:
-            num_cycles = self.cfg['n_cycles'] + 1
+    def plot_current_targets(self):
+        add_height = 0
         self.gym.clear_lines(self.viewer)
-        if hit_so_far:
-            num = self.current_footstep[0] + 1
-            centers = self.footsteps[0, 0:num]
-            centers = torch.cat((centers, torch.zeros(num, 4, 1, device=self.device)), -1)
-            centers[:, :, 2] += add_height
-            vertices, colors = get_circle_lines(centers.reshape(num * 2, 3), foot_colors=True)
-            if plot_next_next:
-                centers = self.footsteps[0, num: num + 1]
-                centers = torch.cat((centers, torch.zeros(1, 4, 1, device=self.device)), -1)
-                centers[:, :, 2] += add_height
-                stack_height = 25
-                temp_vertices, temp_colors = get_circle_lines(centers.reshape(2, 3), stack_height=stack_height)
-                vertices = torch.cat([vertices, temp_vertices])
-                colors = torch.cat([colors, temp_colors])
-        elif current_only:
-            centers = self.footsteps[0, self.current_footstep[0] - 1:self.current_footstep[0] + 1]
-            centers = torch.cat((centers, torch.zeros(2, 2, 1, device=self.device)), -1)
-            centers[:, :, 2] += add_height
-            vertices, colors = get_circle_lines(centers.reshape(4, 3))
-        else:
-            centers = self.footsteps[0]
-            centers = torch.cat((centers, torch.zeros(self.footsteps[0].shape[0], 4, 1, device=self.device)), -1)
-            centers[:, :, 2] += add_height
-            vertices, _ = get_circle_lines(centers.reshape(self.footsteps[0].shape[0] * self.footsteps[0].shape[1], 3), radius=0.02, rand_colors=True)
-            colors = torch.rand(self.footsteps[0].shape[0], 3,
-                                device=self.device)
-            colors = colors.repeat_interleave(vertices.shape[0] // colors.shape[0], 0)
-
+        centers = self.footsteps[0, self.current_footstep[0]]
+        centers = torch.cat((centers, torch.zeros(4, 1, device=self.device)), -1)
+        centers[:, 2] += add_height
+        vertices, colors = get_circle_lines(centers.reshape(4, 3), rand_colors=True)
         self.gym.add_lines(self.viewer, self.envs[0],
                         vertices.shape[0] // 2, vertices.cpu().numpy(),
                         colors.cpu().numpy())
-            # colors = torch.tensor([[1.0, 0.0, 0.0]] * num_cycles).repeat_interleave(4, dim=0)
-            # vertices = self.footsteps[0, self.current_footstep[0] - 1:self.current_footstep[0] + 1]
-            # vertices = vertices.view(num_cycles * 4, 3).clone().repeat_interleave(2, dim=0).cpu()
-        # else:
-            # colors = torch.rand(num_cycles, 3).repeat_interleave(4, dim=0)
-            # base_footsteps = torch.cat((self.footsteps[0].clone(), torch.zeros(num_cycles * 2, 2, 1, device=self.device)), -1)
-            # vertices = base_footsteps.view(num_cycles * 4, 3).clone().repeat_interleave(2, dim=0).cpu()
-        # vertices[1::2, 2] += torch.tensor([0.1, 0.1, 0.2, 0.2] * num_cycles) * 0.25 + add_height
-        # self.gym.add_lines(self.viewer, self.envs[0],
-        #                    num_cycles * 4, vertices.numpy(),
-        #                    colors.numpy())
+
+    def plot_all_targets(self):
+        self.gym.clear_lines(self.viewer)
+        centers = self.footsteps[0]
+        centers = torch.cat((centers, torch.zeros(self.footsteps[0].shape[0], 4, 1, device=self.device)), -1)
+        centers[:, :, 2] += add_height
+        vertices, _ = get_circle_lines(centers.reshape(self.footsteps[0].shape[0] * self.footsteps[0].shape[1], 3), radius=0.02, rand_colors=True)
+        colors = torch.rand(self.footsteps[0].shape[0], 3,
+                            device=self.device)
+        colors = colors.repeat_interleave(vertices.shape[0] // colors.shape[0], 0)
+        self.gym.add_lines(self.viewer, self.envs[0],
+                        vertices.shape[0] // 2, vertices.cpu().numpy(),
+                        colors.cpu().numpy())
 
     def get_footstep_idcs(self, current_footstep):
         """
@@ -241,15 +130,6 @@ class RandomFootstepGenerator:
         # foot_idcs = self.get_footstep_idcs(current_footstep)
         foot_center_pos = self.task.foot_center_pos[:, :, :2]
         return target_location - foot_center_pos
-
-    # def get_footstep_pair_contact_force(self, current_footstep=None):
-    #     if current_footstep is None:
-    #         current_footstep = self.current_footstep
-
-    #     # foot_idcs = self.get_footstep_idcs(current_footstep)
-    #     contact_forces = self.task.foot_contact_forces[
-    #         self.env_arange.unsqueeze(-1), :]
-    #     return contact_forces
 
     def hit_random_footsteps(self, current_footstep=None):
         if current_footstep is None:
@@ -339,13 +219,9 @@ class RandomFootstepGenerator:
             self.counter[hit_targets].clone()
         self.counter += 1
 
-        if self.task.args.two_ahead_opt:
-            self.update_next_next_targets()
+        if hit_targets[0] and not self.task.args.plot_all_targets:
+            self.plot_current_targets()
 
-        if self.rand_every_timestep:
-            self.rand_next_footstep()
-            if self.vis:
-                self.plot_footstep_targets(current_only=True)
 
     def velocity_towards_footsteps(self):
         """Return velocity of current foot towards footsteps. This is just
@@ -384,9 +260,9 @@ class RandomFootstepGenerator:
         self.footsteps[env_ids] = self.generate_footsteps(env_ids)
         if self.rand_every_timestep:
             self.actual_footsteps[env_ids] = self.footsteps[env_ids].clone()
-        if self.vis and env_ids[0] == 0:
+        if env_ids[0] == 0 and self.task.args.plot_all_targets:
             """ Only draw lines for the 0th env, if it is pass in"""
-            self.plot_footstep_targets()
+            self.plot_all_targets()
 
 
     def get_footstep_target_distance(self):
@@ -399,45 +275,6 @@ class RandomFootstepGenerator:
         rot_mat = batch_z_2D_rot_mat(-yaw).view(self.num_envs, 1, 2, 2)
         dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
         return dists.view(self.num_envs, 16)
-
-    # def get_footstep_target_distance(self):
-    #     """This is the observation that gets returned to the agent."""
-    #     yaw = self.task.base_euler[:, 2]
-    #     rot_mat = batch_z_2D_rot_mat(-yaw).view(self.num_envs, 1, 2, 2)
-    #     output = torch.zeros(self.num_envs, 8, device=self.device)
-    #     for i in range(2):
-    #         dists = self.get_footstep_pair_distance(self.current_footstep - i)
-    #         dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
-    #         foot_idcs = self.get_footstep_idcs(self.current_footstep - i)
-    #         output_idcs = (foot_idcs.unsqueeze(-1) * 2
-    #                        + torch.arange(2, device=self.device).view(1, 1, 2))
-    #         output_idcs = output_idcs.view(self.num_envs, 4)
-    #         output[self.env_arange.unsqueeze(-1), output_idcs] = \
-    #             dists.view(self.num_envs, 4)
-    #     return output
-
-    # def get_footstep_target_distance_2_ahead(self):
-    #     """This is the observation that gets returned to the agent."""
-    #     yaw = self.task.base_euler[:, 2]
-    #     rot_mat = batch_z_2D_rot_mat(-yaw).view(self.num_envs, 1, 2, 2)
-    #     output = torch.zeros(self.num_envs, 12, device=self.device)
-    #     for i in range(2):
-    #         dists = self.get_footstep_pair_distance(self.current_footstep - i)
-    #         dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
-    #         foot_idcs = self.get_footstep_idcs(self.current_footstep - i)
-    #         output_idcs = (foot_idcs.unsqueeze(-1) * 2
-    #                        + torch.arange(2, device=self.device).view(1, 1, 2))
-    #         output_idcs = output_idcs.view(self.num_envs, 4)
-    #         output[self.env_arange.unsqueeze(-1), output_idcs] = \
-    #             dists.view(self.num_envs, 4)
-    #     i = -1
-    #     dists = self.get_footstep_pair_distance(self.current_footstep - i)
-    #     dists = (rot_mat @ dists.unsqueeze(-1)).squeeze(-1)
-    #     # foot_idcs = self.get_footstep_idcs(self.current_footstep - i)
-    #     # output_idcs = (foot_idcs.unsqueeze(-1) * 2 + torch.arange(2, device=self.device).view(1, 1, 2))
-    #     # output_idcs = output_idcs.view(self.num_envs, 4)
-    #     output[:, 8:] = dists.view(self.num_envs, 4)
-    #     return output
 
     def get_footstep_target_distance_2_ahead_alt(self):
         """This is the observation that gets returned to the agent."""
