@@ -74,6 +74,13 @@ rm libncursesw*
 ```
 
 ## To run training
+### Baseline end-to-end RL policy
+```python rlg_train.py --cfg_env 12_F --seed 0 --device 0 --headless --cfg_train 12```
+
+To playback trained end-to-end policy
+
+```python rlg_train.py --play --checkpoint <run ID>```
+
 ### Old method
 ```python rlg_train.py --cfg_env 12_H_new_sota --seed 0 --device 1 --cfg_train 12 --headless```
 
@@ -95,6 +102,36 @@ To debug device-side asserts, switch to CPU pipeline with the flag `--pipline cp
 ## Generalization/ High-level evaluation
 
 ### Old high-level evaluation
+As mentioned in the [paper](https://www.jeremiahcoholich.com/publication/quadruped_footsteps/quadruped_footsteps.pdf), the high level does not require training.
+
+The high level policy takes three hyperparameters:
+- The desired direction of travel. This number is given as a multiple of pi, so `--des_dir 0.0` corresponds to forward while `--des_dir 1.0` is backwards.
+- The coeffient for the desired direction term of the optimization. This balances the directional term of the cost function with the value function for footsteps. `--des_dir_coef 1.0` corresponds to a coeffient of 1. `--des_dir_coef 0.0` means the agent will just pick the highest value footstep targets (which are basically in-place)
+- `--box_len` is the size of the box around the current footsteps that the high level policy will search in
+
+By default, the stepping stones (ss) in the training environment are a sort of curriculum that becomes more challenging as the robot progresses in the x-direction and in the plus or minus y-direction. However, during evaluation we would like to test on terrain of uniform difficulty, so we use the following arguments.
+Terrain parameters and arguments:
+`--add_ss` needed to pass custom stepping stone terrain parameters
+`--ss_infill` value in (0.0, 1.0] which represents the fraction of infill. Lower is harder
+`--ss_height_var` This is a positive float representing range of variation of stepping stone heights. Higher is harder.
+`--no_ss` removes stepping stones from the environment
+
+Other parameters: \
+`--footstep_targets_in_place` stops the footstep target generation from occuring that the low-level policy is trained on. \
+`--two_ahead_opt` means the high-level jointly optimizes over the next footstep targets and the pair of targets after that. It has better performance and should be on by default, BUT ONLY WHEN `--des_dir 0.0` TODO change this\
+`--plot_values` The locations where the feet make contact with the ground are plotted with dots. Each leg has its own color. The next footstep targets are marked with red columns.
+
+
+To walk forward on flat ground:
+
+```python rlg_train.py --play --checkpoint <run ID> --num_envs 1 --no_ss --plot_values --des_dir_coef 1.0 --des_dir 0.0 --footstep_targets_in_place --two_ahead_opt```
+
+
+To walk forward on stepping stones:
+```python rlg_train.py --play --checkpoint <run ID> --num_envs 1 --add_ss --ss_infill 0.75 --ss_height_var 0.1 --plot_values --des_dir_coef 1.0 --des_dir 0.0 --footstep_targets_in_place --two_ahead_opt```
+
+
+
 
 
 ### New Evaluation

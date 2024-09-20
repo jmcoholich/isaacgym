@@ -1,7 +1,7 @@
 # Trains the low-level on flatground with pmtg
 
 env:
-  numEnvs: 3333
+  numEnvs: 4000
   envSpacing: 4.0
   numActions: 15
   actionSpace: pmtg  # can either be 'pmtg', 'pmtg_delta', 'joints', 'foot_positions'
