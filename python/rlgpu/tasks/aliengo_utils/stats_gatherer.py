@@ -98,7 +98,7 @@ class StatsGatherer:
         # path = os.path.join(data_dir, fname)
         data_dir = self.task.args.data_dir
         if not os.path.exists(data_dir):
-            os.mkdir(data_dir)
+            os.makedirs(data_dir)
 
         path = os.path.join(data_dir, self.task.args.save_fname.replace("/", "") + ".pgz")
         # if not os.path.exists(data_dir):
