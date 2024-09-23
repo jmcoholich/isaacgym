@@ -41,7 +41,7 @@ To install an NVIDIA driver
 ## To install IsaacGym + RL_Games locally
 
     cd ~
-    git clone https://github.gatech.edu/jcoholich3/isaacgym.git
+    git clone git@github.com:jmcoholich/isaacgym.git
     cd isaacgym
     conda env create -f python/rlgpu_conda_env.yml
     conda activate rlgpu
