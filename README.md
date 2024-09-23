@@ -102,6 +102,22 @@ To debug device-side asserts, switch to CPU pipeline with the flag `--pipline cp
 ## Generalization/ High-level evaluation
 
 ### Old high-level evaluation
+
+#### All Evaluation
+To evaluate a flat RL policy run
+
+
+`python evaluate_policy.py --id <run_id> --flat_policy True`
+
+To evaluate the propose hierarchical method run
+
+`python evaluate_policy.py --id <run_id> --flat_policy False`
+
+
+The `evaluate_policy.py` script is parallelized across gpus and will automatically scale to use all available gpus.
+
+#### Commands breakdown
+
 As mentioned in the [paper](https://www.jeremiahcoholich.com/publication/quadruped_footsteps/quadruped_footsteps.pdf), the high level does not require training.
 
 The high level policy takes three hyperparameters:

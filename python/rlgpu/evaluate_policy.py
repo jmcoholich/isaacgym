@@ -18,10 +18,20 @@ import wandb
 def get_args():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
+
+    # mutually exclusive args
     group.add_argument("--id", type=str,
                        help="This is the id of the run to evalute.")
     group.add_argument("--run_name", type=str,
                        help="If passed, eval all runs with this name.")
+
+    # other args
+    parser.add_argument("--wandb_project", type=str,
+                       help="Project to pull the runs from.")
+    parser.add_argument("--wandb_username", type=str,
+                       help="WandB username to pull info from")
+    parser.add_argument("--flat_policy", type=bool,
+                       help="pass True if the policy is a flat RL policy, False if it is a hierarchical policy")
     parser.add_argument("--timeout", type=int, default=5000,
                         help="Number of env steps to timeout after")
     parser.add_argument("--debug", action="store_true",
@@ -51,6 +61,7 @@ def main():
 
 
 def generate_commands(args):
+    print("Generating evaluation commands")
     cmds = []
     if args.debug:
         env_difficulties = [
@@ -88,18 +99,19 @@ def generate_commands(args):
         ]
 
     if args.run_name:
-        ids = get_wandb_ids_from_run_name(args.run_name)
+        ids = get_wandb_ids_from_run_name(args.run_name, args.wandb_project)
         data_dir = "data/" + args.run_name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "")
         if args.run_name[0] == "H":
-            data_dir += "dd_" + str(args.des_dir_coef) + "_bb_" + str(args.box_len).replace('.', '_') + "_dist_" + str(args.nn_ft_dist).replace('.', '_') + "_width_" + str(args.nn_ft_width).replace('.', '_')
-        if args.debug:
-            ids = ids[:2]
+            args.flat_policy = False
     else:
-        raise NotImplementedError()
         ids = [args.id]
         data_dir = "data/" + args.id
 
+    if args.flat_policy == False:  # I can't just eval the arg since it could be None
+        data_dir += "dd_" + str(args.des_dir_coef) + "_bb_" + str(args.box_len).replace('.', '_') + "_dist_" + str(args.nn_ft_dist).replace('.', '_') + "_width_" + str(args.nn_ft_width).replace('.', '_')
+
     if args.debug:
+        ids = ids[:2]
         data_dir += "_debug"
 
     for id_ in ids:
@@ -111,10 +123,10 @@ def generate_commands(args):
             "--num_envs", str(args.num_envs),
             "--gather_stats", str(args.num_rollouts),
             "--timeout", str(args.timeout),
-            "--ws", str(determine_ws_arg(id_)),
+            # "--ws", str(determine_ws_arg(id_)), # disable this for now. Just assume its all on the same workstation
             "--data_dir", data_dir
         )
-        if args.run_name[0] == "H":
+        if args.flat_policy == False:
             cmds.extend(generate_in_place_cmds(args, cmd_base, id_))
         else:
             cmds.extend([list(cmd_base) + ['--no_ss', "--save_fname", str(id_) + "__" + "flatground"]])
@@ -181,7 +193,7 @@ def generate_terrain_cmds(args, env_difficulties, cmd_base, id_):
         # cmd += ["--add_perturb", "100.0"]
 
         # if policy_type[0] == "H" and env != "Training_Reward":
-        if get_wandb_run_name_from_id(id_)[0] == "H":
+        if args.flat_policy == False:
             cmd += ["--plot_values",
                     "--des_dir_coef", str(args.des_dir_coef),
                     "--des_dir", "0",
