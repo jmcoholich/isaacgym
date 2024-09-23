@@ -19,6 +19,15 @@ def get_args():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
 
+    # function to eval str to bool
+    def str2bool(v):
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+
     # mutually exclusive args
     group.add_argument("--id", type=str,
                        help="This is the id of the run to evalute.")
@@ -30,7 +39,7 @@ def get_args():
                        help="Project to pull the runs from.")
     parser.add_argument("--wandb_username", type=str,
                        help="WandB username to pull info from")
-    parser.add_argument("--flat_policy", type=bool,
+    parser.add_argument("--flat_policy", type=str2bool,
                        help="pass True if the policy is a flat RL policy, False if it is a hierarchical policy")
     parser.add_argument("--timeout", type=int, default=5000,
                         help="Number of env steps to timeout after")
@@ -126,6 +135,7 @@ def generate_commands(args):
             # "--ws", str(determine_ws_arg(id_)), # disable this for now. Just assume its all on the same workstation
             "--data_dir", data_dir
         )
+
         if args.flat_policy == False:
             cmds.extend(generate_in_place_cmds(args, cmd_base, id_))
         else:
