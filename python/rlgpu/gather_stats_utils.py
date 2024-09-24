@@ -105,6 +105,8 @@ def gpu_parallel_cmd_runner(cmds, jobs_per_gpu=1):
     # init jobs
     for i in range(num_gpus):
         for j in range(jobs_per_gpu):
+            if not cmds:
+                break
             cmd = cmds.pop()
             cmd_counter += 1
             print(f"Running command {cmd_counter}/{total_cmds}")
