@@ -35,6 +35,7 @@ def get_args():
                        help="If passed, eval all runs with this name.")
 
     # other args
+    parser.add_argument("--jobs_per_gpu", type=int, default=1)
     parser.add_argument("--wandb_project", type=str,
                        help="Project to pull the runs from.")
     parser.add_argument("--wandb_username", type=str,
@@ -66,7 +67,7 @@ def get_args():
 def main():
     args = get_args()
     cmds = generate_commands(args)
-    gpu_parallel_cmd_runner(cmds)
+    gpu_parallel_cmd_runner(cmds, jobs_per_gpu=args.jobs_per_gpu)
 
 
 def generate_commands(args):

@@ -96,48 +96,50 @@ def get_wandb_run_ids(names):
     return run_ids
 
 
-def gpu_parallel_cmd_runner(cmds):
+def gpu_parallel_cmd_runner(cmds, jobs_per_gpu=1):
     total_cmds = len(cmds)
     # now, run all this stuff in parallel
     num_gpus = detect_num_gpus()
-    jobs = [None] * num_gpus
+    jobs = [[None] * jobs_per_gpu] * num_gpus
     cmd_counter = 0
     # init jobs
     for i in range(num_gpus):
-        cmd = cmds.pop()
-        cmd_counter += 1
-        print(f"Running command {cmd_counter}/{total_cmds}")
-        print(" ".join(cmd) + '\n')
-        jobs[i] = Popen(cmd + ["--device_id", str(i)], stdout=PIPE,
-                        stderr=PIPE, text=True)
+        for j in range(jobs_per_gpu):
+            cmd = cmds.pop()
+            cmd_counter += 1
+            print(f"Running command {cmd_counter}/{total_cmds}")
+            print(" ".join(cmd) + '\n')
+            jobs[i][j] = Popen(cmd + ["--device_id", str(i)], stdout=PIPE,
+                            stderr=PIPE, text=True)
 
     while True:
-        for i, job in enumerate(jobs):  # check if any of the jobs are done
-            if job is not None:
-                # job.poll() returns None if the job is still running
-                # job.poll() returns an exit code if the job has finished
-                poll = job.poll()
-            else:
-                poll = None
+        for i, gpu in enumerate(jobs):  # check if any of the jobs are done
+            for j, job in enumerate(gpu):
+                if job is not None:
+                    # job.poll() returns None if the job is still running
+                    # job.poll() returns an exit code if the job has finished
+                    poll = job.poll()
+                else:
+                    poll = None
 
-            if poll in {0, -11, 139}:  # successful exit or segmentation fault (I don't care)
-                if not cmds:  # if there are no more runs
-                    jobs[i] = None
-                else:  # start another run if there are still runs left
-                    cmd = cmds.pop()
-                    cmd_counter += 1
-                    # time.sleep(10.0)  # give previous run plenty of time to exit to avoid issues.
-                    print(f"Running command {cmd_counter}/{total_cmds}")
-                    print(" ".join(cmd) + '\n')
-                    jobs[i] = Popen(cmd + ["--device_id", str(i)], stdout=PIPE,
-                                    stderr=PIPE, text=True)
-            elif poll is not None and poll != 0:  # unsuccessful exit
-                trace = job.stderr.readlines()
-                for line in trace:
-                    print(line, end='')
-                breakpoint()
+                if poll in {0, -11, 139}:  # successful exit or segmentation fault (I don't care)
+                    if not cmds:  # if there are no more runs
+                        jobs[i][j] = None
+                    else:  # start another run if there are still runs left
+                        cmd = cmds.pop()
+                        cmd_counter += 1
+                        # time.sleep(10.0)  # give previous run plenty of time to exit to avoid issues.
+                        print(f"Running command {cmd_counter}/{total_cmds}")
+                        print(" ".join(cmd) + '\n')
+                        jobs[i][j] = Popen(cmd + ["--device_id", str(i)], stdout=PIPE,
+                                        stderr=PIPE, text=True)
+                elif poll is not None and poll != 0:  # unsuccessful exit
+                    trace = job.stderr.readlines()
+                    for line in trace:
+                        print(line, end='')
+                    breakpoint()
 
-        if all(not k for k in jobs):  # if all jobs are done, break
+        if not any(any(k) for k in jobs):
             break
 
 
