@@ -108,6 +108,7 @@ def generate_commands(args):
         ]
 
     if args.run_name:
+        raise NotImplementedError("This is not implemented yet")
         ids = get_wandb_ids_from_run_name(args.run_name, args.wandb_project)
         data_dir = "data/" + args.run_name.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "")
         if args.run_name[0] == "H":
@@ -116,12 +117,20 @@ def generate_commands(args):
         ids = [args.id]
         data_dir = "data/" + args.id
 
-    if args.flat_policy == False:  # I can't just eval the arg since it could be None
-        data_dir += "dd_" + str(args.des_dir_coef) + "_bb_" + str(args.box_len).replace('.', '_') + "_dist_" + str(args.nn_ft_dist).replace('.', '_') + "_width_" + str(args.nn_ft_width).replace('.', '_')
+    # if args.flat_policy == False:  # I can't just eval the arg since it could be None
+    #     data_dir += "dd_" + str(args.des_dir_coef) + "_bb_" + str(args.box_len).replace('.', '_') + "_dist_" + str(args.nn_ft_dist).replace('.', '_') + "_width_" + str(args.nn_ft_width).replace('.', '_')
+
+    # just save all the args in a text file
 
     if args.debug:
         ids = ids[:2]
         data_dir += "_debug"
+
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    with open(data_dir + "/args.txt", "w") as f:
+        f.write(str(args))
 
     for id_ in ids:
         cmd_base = (

@@ -24,6 +24,62 @@ import numpy as np
 from math import log10, floor
 import hashlib
 
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    # group = parser.add_mutually_exclusive_group(required=False)
+    # group.add_argument("--id", type=str,
+    #                    help="This is the id of the run to evalute.")
+    parser.add_argument("--h_id", type=str,
+                       help="Run ID of the hierarchical method")
+    parser.add_argument("--f_id", type=str,
+                       help="Run ID of the flat policy")
+
+    parser.add_argument("--run_name", type=str,
+                       help="If passed, add this to plots in addition to H and F SOTA.")
+    parser.add_argument("--save_dir", type=str, default="plots")
+    parser.add_argument("--no_regen", action='store_true',
+                       help="Skip regenerating the data file.")
+    parser.add_argument("--score_runs", action='store_true',
+                       help="score runs compared to a baseline")
+
+    # parser.add_argument("--load_data", action="store_true",
+    #                    help="If passed, add this to plots in addition to H and F SOTA.")
+    # parser.add_argument("--load_data", action="store_true",
+    #                    help="If passed, add this to plots in addition to H and F SOTA.")
+    # parser.add_argument("--save_data", action="store_true",
+    #                    help="If passed, add this to plots in addition to H and F SOTA.")
+    return parser.parse_args()
+
+
+def main():
+    args = get_args()
+
+    sota = {
+        "Proposed Method" : args.h_id,
+        "End-to-end": args.f_id,
+    }
+    if not args.no_regen:
+        regen_data_file()
+
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
+
+    # data = get_data(sota, args)
+    all_data = load_all_data_file()
+    data = {}
+    for key, val in sota.items():
+        data[key] = all_data[val]
+
+    if args.score_runs:
+        score_runs(data, sota, args, "End-to-end")
+    generate_sup_plot(data, sota, args)
+    generate_small_plot(data, sota, args)
+    generate_success_only_plot(data, sota, args)
+    generate_in_place_results_table(data, sota, args)
+    generate_optimized_footstep_trajectories_plot(data, sota, args)
+
+
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
         if module == 'torch.storage' and name == '_load_from_bytes':
@@ -58,44 +114,14 @@ def get_data(sota, args):
             need_to_load[name] = name
     if need_to_load:
         raise NotImplementedError()
-        print(f"Need to load {len(need_to_load)} additional runs...")
-        extra_data = parallel_load_relevent_data(need_to_load)
+        # print(f"Need to load {len(need_to_load)} additional runs...")
+        # extra_data = parallel_load_relevent_data(need_to_load)
 
     output_data = {}
     # return just the data for the runs that I actually need
     for key, value in names.items():
         output_data[key] = all_data[value.replace(" ", "_").replace("(", "").replace(")", "").replace(".", "")]
     return output_data
-
-
-def main():
-
-    sota = {
-        # "OLD Proposed Method" : "H ss state (0.2 rand new)",
-        # "Proposed Method" : "H_new_sotadd_75_bb_0_225_dist_0_1_width_0_075",
-        "Proposed Method" : "H_new_sotadd_75_bb_0_225_dist_0_1_width_0_15",
-        # "OLD End-to-end" : "F ss state final",
-        # "f_0p5_1p0_0p1_0p0625": "f_0p5_1p0_0p1_0p0625",
-        "End-to-end": "f_0p5_1p0_0p2_0p03125",
-        # "f_1p0_0p5_0p2_0p03125": "f_1p0_0p5_0p2_0p03125",
-    }
-    args = get_args()
-    if args.regen_data_file:
-        regen_data_file()
-    random_id = str(torch.randint(1000000, (1,)).item())
-    if not os.path.exists("plots"):
-        os.makedirs("plots")
-    save_dir = os.path.join("plots", random_id)
-    args.save_dir = save_dir
-    data = get_data(sota, args)
-    if args.score_runs:
-        score_runs(data, sota, args, "End-to-end")
-    os.mkdir(save_dir)
-    generate_sup_plot(data, sota, args)
-    generate_small_plot(data, sota, args)
-    generate_success_only_plot(data, sota, args)
-    generate_in_place_results_table(data, sota, args)
-    generate_optimized_footstep_trajectories_plot(data, sota, args)
 
 
 def score_runs(data, sota, args, baseline_run_name):
@@ -250,17 +276,27 @@ def print_latex_table(r):
     # print(r"\begin{tabular}{ p{0.1\linewidth}|p{0.07\linewidth} p{0.07\linewidth} p{0.07\linewidth} p{0.09\linewidth} p{0.07\linewidth} p{0.07\linewidth} } ")
     # print(r"Footstep Target Selection Method & Reward per Timestep & Reward per Footstep & Reward per Episode & Episode Length (timesteps) & Footstep Targets Hit & Timesteps per Footstep\\ ")
     # print(r"\hline")
+    metrics = ["rew/timestep", "rew/footstep", "rew/episode", "episode_len", "targets_hit", "time/target"]
     keys = ["in_place_rand", "in_place_fixed", "in_place_opt"]
     titles = ["Random", "Fixed", "Optimized"]
+    maxes = {key: (None, -float("inf")) for key in metrics}
     for title, key in zip(titles, keys):
-        out = title
-        for met in ["rew/timestep", "rew/footstep", "rew/episode", "episode_len", "targets_hit", "time/target"]:
-            # x = r[key][met]
-            # sig_figs = 3
-            # out += f" & {round(x, -int(floor(log10(abs(x)))) + sig_figs)}".strip('0')
-            out += f" & {r[key][met] :#.2f} "
+        for met in metrics:
+            if r[key][met] > maxes[met][1]:
+                maxes[met] = (title, r[key][met])
+    out = ""
+    for title, key in zip(titles, keys):
+        out += title
+        for met in metrics:
+            if title == maxes[met][0]:
+                # bold the number
+                out += f" & \\textbf{{{r[key][met]:,.2f}}}"
+            else:
+                out += f" & {r[key][met]:,.2f}"
+
         out += r"\\"
-        print(out)
+        out += "\n"
+    print(out)
     # print(r"\label{table:in_place_results}")
     # print(r"\end{tabular}")
     # print(r"\end{center}")
@@ -269,6 +305,40 @@ def print_latex_table(r):
     print('\n'*2 + '#' * len(temp))
     print(temp)
     print('#' * len(temp) + '\n')
+
+    latex_to_readable_table(out, ['Method'] + metrics)
+
+def latex_to_readable_table(latex_string: str, col_headings: list):
+    # Replace \textbf{...} with *...* for bold values
+    latex_string = latex_string.replace('\\textbf{', '*').replace('}', '*')
+
+    # Split the input string into rows by double backslash
+    rows = latex_string.strip().split('\\\\')
+
+    # Clean and process each row
+    table_data = []
+    max_lengths = [len(heading) for heading in col_headings]
+
+    for row in rows:
+        if row.strip():  # Skip any empty rows
+            # Split each row by '&' to get the columns
+            columns = [col.strip() for col in row.split('&')]
+            table_data.append(columns)
+
+            # Update max_lengths to track the maximum width of each column
+            for i, col in enumerate(columns):
+                max_lengths[i] = max(max_lengths[i], len(col))
+
+    # Print the column headings first
+    formatted_header = " | ".join(f"{heading:<{max_lengths[i]}}" for i, heading in enumerate(col_headings))
+    print(formatted_header)
+    print("-" * len(formatted_header))
+
+    # Print the formatted table rows
+    for row in table_data:
+        formatted_row = " | ".join(f"{col:<{max_lengths[i]}}" for i, col in enumerate(row))
+        print(formatted_row)
+    print('\n')
 
 
 def generate_optimized_footstep_trajectories_plot(data, sota, args):
@@ -349,57 +419,6 @@ def generate_optimized_footstep_trajectories_plot(data, sota, args):
     plt.close()
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    # group = parser.add_mutually_exclusive_group(required=False)
-    # group.add_argument("--id", type=str,
-    #                    help="This is the id of the run to evalute.")
-    parser.add_argument("--run_name", type=str,
-                       help="If passed, add this to plots in addition to H and F SOTA.")
-    parser.add_argument("--regen_data_file", action='store_true',
-                       help="Regenerate the condensed datafile")
-    parser.add_argument("--score_runs", action='store_true',
-                       help="score runs compared to a baseline")
-    # parser.add_argument("--load_data", action="store_true",
-    #                    help="If passed, add this to plots in addition to H and F SOTA.")
-    # parser.add_argument("--load_data", action="store_true",
-    #                    help="If passed, add this to plots in addition to H and F SOTA.")
-    # parser.add_argument("--save_data", action="store_true",
-    #                    help="If passed, add this to plots in addition to H and F SOTA.")
-    return parser.parse_args()
-
-
-# def save_data_file(names_to_analyze, data):
-#     """Each data file is uniquely identified by the hash of the dict values."""
-#     fname = str(_hash(names_to_analyze.values())) + '.pgz'
-#     path = os.path.join('data', fname)
-#     # if os.path.exists(path):
-#     #     ans = input("Save file already exists. Overwrite? (y/n)")
-#     #     if ans != 'y':
-#     #         print('skipping save...')
-#     #         return
-#     print(f"Saving data file at {path}")
-#     with gzip.GzipFile(path, 'w') as f:
-#         pickle.dump(data, f)
-
-
-# def _hash(values):
-#     x = hashlib.md5(bytes(str(values), 'utf-8'))
-#     return x.hexdigest()
-
-
-# def load_data_file(names_to_analyze):
-#     """Each data file is uniquely identified by the hash of the dict values."""
-#     fname = str(_hash(names_to_analyze.values())) + '.pgz'
-#     path = os.path.join('data', fname)
-#     if not os.path.exists(path):
-#         print(f'\nLoading {len(names_to_analyze)} runs from scratch...\n')
-#         return None
-#     print(f'found saved data file. loading {path}')
-#     with gzip.GzipFile(path, 'r') as f:
-#         data = CPU_Unpickler(f).load()
-#     return data
-
 def regen_data_file():
     all_runs = [name for name in os.listdir('data') if os.path.isdir(os.path.join('data', name))]
     names = {}
@@ -411,8 +430,8 @@ def regen_data_file():
     print(f"Saving data file at {path}")
     with gzip.GzipFile(path, 'w') as f:
         pickle.dump(data, f)
-    print(f"Saved. Exiting now")
-    sys.exit()
+    print(f"Saved.")
+    # sys.exit()
 
 
 def load_all_data_file():
@@ -504,7 +523,8 @@ def _load_and_process_data(path, method, checkpoint, env_key):
     idx = output["eps_len"] - 1
     output["distance_traveled"] = x["base_position"][torch.arange(len(idx)), idx, 0]
 
-    if method == "Proposed Method" or method[0] == "H":
+    # if method == "Proposed Method" or method[0] == "H":
+    if "current_footstep" in x:
         output["footstep targets hit"] = x['current_footstep'] - 1
         output['current_footstep'] = x['current_footstep']
         output['footstep_targets'] = x['footstep_targets']
@@ -531,6 +551,9 @@ def avg_across_seeds(data, metric, floats=False):
             val[env] /= training_rew
         mean = val[env].mean()
         std = val[env].std()
+        if np.isnan(std):
+            # std is nan due to only a single seed
+            std = np.ones_like(std)
         val[env] = {}
         val[env]["mean"] = mean
         val[env]["std"] = std
@@ -580,18 +603,19 @@ def generate_sup_plot(data, sota, args):
             sorted_keys = list(vals.keys())
             sorted_keys.sort(key=lambda x: (x[1], -x[0]))
             y_points = [fg_data["mean"].item()]
-            errors = [fg_data["std"].item()]
+            # errors = [fg_data["std"].item()]
             x_labels = ["Flatground"]
             for key in sorted_keys:
                 y_points.append(vals[key]["mean"].item())
-                errors.append(vals[key]["std"].item())
+                # errors.append(vals[key]["std"].item())
                 x_labels.append(f"{key[0] * 100}% / {key[1]}")
             if method == "Proposed Method":
                 line_fmt = "--"
             else:
                 line_fmt = "-"
             fmt = next(marker) + line_fmt
-            ax.errorbar(x_labels, y_points, fmt=fmt, yerr=errors, label=method, capsize=3.0)
+            # ax.errorbar(x_labels, y_points, fmt=fmt, yerr=errors, label=method, capsize=3.0)
+            ax.errorbar(x_labels, y_points, fmt=fmt, label=method, capsize=3.0)
         if flag:
             # ax.legend(loc="upper right")
             flag = False
@@ -658,7 +682,8 @@ def _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
         else:
             line_fmt = "-"
         fmt = next(marker) + line_fmt
-        ax.errorbar(x_labels, y_points, fmt=fmt, yerr=errors, label=method, capsize=3.0)
+        # ax.errorbar(x_labels, y_points, fmt=fmt, yerr=errors, label=method, capsize=3.0)
+        ax.errorbar(x_labels, y_points, fmt=fmt, label=method, capsize=3.0)
     ax.set_xticklabels(x_labels, rotation=45, ha="right")
     ax.axvspan(1 - 0.5, 4 + 0.5, facecolor='b', alpha=0.1)
     # ax.axvspan(7.5, 14.5, facecolor='g', alpha=0.1)

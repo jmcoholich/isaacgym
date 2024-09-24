@@ -17,7 +17,7 @@ wandb/
 *$py.class
 *.cpython-37.pyc
 *.log
-
+*.svg
 *.pot
 
 *.pyc

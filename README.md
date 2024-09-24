@@ -103,6 +103,10 @@ To debug device-side asserts, switch to CPU pipeline with the flag `--pipline cp
 
 ### Old high-level evaluation
 
+To evaluate the flat and hierarchical policy and generate all figures, run:
+
+```bash generate_results.bash <hierarchical policy id>  <flat policy id> <name of plots folder>```
+
 #### All Evaluation
 To evaluate a flat RL policy run
 
