@@ -224,9 +224,10 @@ def generate_small_plot(data, sota, args):
 
 def generate_in_place_results_table(data, sota, args):
     results = process_in_place_results(data, sota, args)
-    print_latex_table(results)
-    # print_table()
-
+    all_output = print_latex_table(results)
+    # save to txt file
+    with open(os.path.join(args.save_dir, "in_place_results.txt"), 'w') as f:
+        f.write(all_output)
 
 def process_in_place_results(data, sota, args):
     data = data["Proposed Method"]
@@ -266,11 +267,17 @@ def process_in_place_results(data, sota, args):
 
 
 def print_latex_table(r):
-    print()
+    out = ""
+    # temp = '#' * 10 + ' beginning latex code (copy to overleaf) ' + '#' * 10
+    # print('#' * len(temp))
+    # print(temp)
+    # print('#' * len(temp) + '\n'*2)
+
     temp = '#' * 10 + ' beginning latex code (copy to overleaf) ' + '#' * 10
-    print('#' * len(temp))
-    print(temp)
-    print('#' * len(temp) + '\n'*2)
+    out += '#' * len(temp) + '\n'
+    out += temp + '\n'
+    out += '#' * len(temp) + '\n'*2
+
     # print(r"\begin{table*}")
     # print(r"\begin{center}")
     # print(r"\begin{tabular}{ p{0.1\linewidth}|p{0.07\linewidth} p{0.07\linewidth} p{0.07\linewidth} p{0.09\linewidth} p{0.07\linewidth} p{0.07\linewidth} } ")
@@ -284,31 +291,35 @@ def print_latex_table(r):
         for met in metrics:
             if r[key][met] > maxes[met][1]:
                 maxes[met] = (title, r[key][met])
-    out = ""
+    latex_table_code_string = ""
     for title, key in zip(titles, keys):
-        out += title
+        latex_table_code_string += title
         for met in metrics:
             if title == maxes[met][0]:
                 # bold the number
-                out += f" & \\textbf{{{r[key][met]:,.2f}}}"
+                latex_table_code_string += f" & \\textbf{{{r[key][met]:,.2f}}}"
             else:
-                out += f" & {r[key][met]:,.2f}"
+                latex_table_code_string += f" & {r[key][met]:,.2f}"
 
-        out += r"\\"
-        out += "\n"
-    print(out)
+        latex_table_code_string += r"\\"
+        latex_table_code_string += "\n"
     # print(r"\label{table:in_place_results}")
     # print(r"\end{tabular}")
     # print(r"\end{center}")
     # print(r"\end{table*}")
+    out += latex_table_code_string
     temp = '#' * 10 + ' end latex code ' + '#' * 10
-    print('\n'*2 + '#' * len(temp))
-    print(temp)
-    print('#' * len(temp) + '\n')
+    out += '\n'*2 + '#' * len(temp) + '\n'
+    out += temp + '\n'
+    out += '#' * len(temp) + '\n' + '\n'
 
-    latex_to_readable_table(out, ['Method'] + metrics)
+    out += latex_to_readable_table(latex_table_code_string, ['Method'] + metrics)
+    print(out)
+    return out
+
 
 def latex_to_readable_table(latex_string: str, col_headings: list):
+    out = ""
     # Replace \textbf{...} with *...* for bold values
     latex_string = latex_string.replace('\\textbf{', '*').replace('}', '*')
 
@@ -331,14 +342,18 @@ def latex_to_readable_table(latex_string: str, col_headings: list):
 
     # Print the column headings first
     formatted_header = " | ".join(f"{heading:<{max_lengths[i]}}" for i, heading in enumerate(col_headings))
-    print(formatted_header)
-    print("-" * len(formatted_header))
+    # print(formatted_header)
+    # print("-" * len(formatted_header))
+    out += formatted_header + '\n'
+    out += "-" * len(formatted_header) + '\n'
 
     # Print the formatted table rows
     for row in table_data:
         formatted_row = " | ".join(f"{col:<{max_lengths[i]}}" for i, col in enumerate(row))
-        print(formatted_row)
-    print('\n')
+        # print(formatted_row)
+        out += formatted_row + '\n'
+    out += '\n' * 2
+    return out
 
 
 def generate_optimized_footstep_trajectories_plot(data, sota, args):

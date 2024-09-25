@@ -1,3 +1,6 @@
+test_imgs/
+plots/
+data/
 *.avi
 *.svg
 *.pkl

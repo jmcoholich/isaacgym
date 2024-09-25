@@ -755,22 +755,23 @@ class Aliengo(BaseTask):
     def update_video_camera_graphics(self):
         self.gym.step_graphics(self.sim)
         self.gym.render_all_camera_sensors(self.sim)
-        if self.progress_buf[0] >= self.args.start_after:
-            self.gym.start_access_image_tensors(self.sim)
+        # if self.progress_buf[0] >= self.args.start_after:
+        self.gym.start_access_image_tensors(self.sim)
 
-            # save images
-            img_dir = "test_imgs"
-            if not os.path.exists(img_dir):
-                os.mkdir(img_dir)
-            fname = os.path.join(
-                img_dir,
-                f"{self.args.file_prefix}-cam-{self.progress_buf[0]}.png")
-            cam_img = self.video_camera_image.cpu().numpy()
-            imageio.imwrite(fname, cam_img)
-            self.gym.end_access_image_tensors(self.sim)
-        if (self.progress_buf[0] >= self.args.exit_after
-                or (self.reset_buf[0]
-                    and self.progress_buf[0] > self.args.start_after)):
+        # save images
+        img_dir = "test_imgs"
+        if not os.path.exists(img_dir):
+            os.mkdir(img_dir)
+        fname = os.path.join(
+            img_dir,
+            f"{self.args.file_prefix}-cam-{self.progress_buf[0]}.png")
+        cam_img = self.video_camera_image.cpu().numpy()
+        imageio.imwrite(fname, cam_img)
+        self.gym.end_access_image_tensors(self.sim)
+        # if (self.progress_buf[0] >= self.args.exit_after
+        #         or (self.reset_buf[0]
+        #             and self.progress_buf[0] > self.args.start_after)):
+        if self.reset_buf[0] and self.progress_buf[0] > 10:
             os.sys.exit()
 
     def update_graphics(self):
