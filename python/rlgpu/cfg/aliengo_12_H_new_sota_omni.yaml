@@ -67,7 +67,7 @@ env:
 
   reward:
     # base_x_vel: [0.0, 1.0]  # rew term coef, clip value
-    torque_penalty: [0.0000001]
+    torque_penalty: [0.0]
     euler_angle_pen: [0.1, 0.1, 0.0]
     collision_penalty: [0.125]
     hit_footstep: [2.0]
@@ -77,8 +77,8 @@ env:
     current_footstep_for_logging: [None] # this is purely just for logging, using the structure I already set up
     curriculum_param_for_logging: [None]
     smoothness: [0.03125]
-    slip_penalty: [0.0625]
-    foot_lift: [0.5]
+    slip_penalty: [0.125]
+    foot_lift: [0.75]
     # contact_rew: [0.00]
     foot_stay: [0.25]
     # wrong_ss_collision_penalty: [0.125]
@@ -110,7 +110,7 @@ env:
     - footstep_generator_current_foot_one_hot
     - previous_action
     - previous_previous_action
-    - stepping_stone_state_slim
+    # - stepping_stone_state_slim
 
   prev_obs_stacking: 0
 
