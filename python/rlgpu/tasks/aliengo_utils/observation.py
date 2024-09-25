@@ -300,11 +300,10 @@ class Observation():
 
     def spoof_ss_state(self, size):
         """This is for running policies trained with ss_state on flat ground.
-        I just return the negative foot center distance, for the size of the
-        observation
+        I just return the hight of the foot above the ground.
         """
         output = torch.zeros(self.num_envs, 4, size // 4, device=self.device)
-        output[:] = -self.task.foot_center_pos[..., 2:].clone()
+        output[:] = self.task.foot_center_pos[..., 2:].clone()
         return output.clamp(-1.0, 1.0).reshape(self.num_envs, size)
 
     def get_base_position(self):
