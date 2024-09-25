@@ -59,16 +59,16 @@ env:
     # length_offset: -0.02
     n_cycles: 400 # how many cycles of 4 footsteps to generate in the training env
     gait: random
-    footstep_rand: 0.2 # range of uniform displacement to apply to every footstep
-    footstep_distance_threshold: 0.075  # in meters. This get a multiplier based on how close to the center it is.
+    footstep_rand: 0.25 # range of uniform displacement to apply to every footstep
+    footstep_distance_threshold: 0.05  # in meters. This get a multiplier based on how close to the center it is.
     center_rew_multiplier: 0.5
-    hit_all_multiplier: 3.0
+    hit_all_multiplier: 2.0
     contact_force_treshold: 5.0 # N
 
   reward:
     # base_x_vel: [0.0, 1.0]  # rew term coef, clip value
-    torque_penalty: [0.0000001]
-    euler_angle_pen: [0.1, 0.1, 0.0]
+    torque_penalty: [0.000001]
+    # euler_angle_pen: [0.1, 0.1, 0.0]
     collision_penalty: [0.125]
     hit_footstep: [2.0]
     velocity_towards_footsteps: [0.25, 1000000.0] # coef, clip
@@ -77,7 +77,7 @@ env:
     current_footstep_for_logging: [None] # this is purely just for logging, using the structure I already set up
     curriculum_param_for_logging: [None]
     smoothness: [0.03125]
-    slip_penalty: [0.0625]
+    slip_penalty: [0.125]
     # foot_lift: [0.5]
     # contact_rew: [0.00]
     # foot_stay: [0.25]
