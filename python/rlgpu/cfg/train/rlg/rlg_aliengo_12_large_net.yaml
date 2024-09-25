@@ -60,7 +60,7 @@ params:
     #     #   padding: 0
 
     mlp:
-      units: [512, 128]
+      units: [256, 128]
       activation: elu
       d2rl: False
 
@@ -98,8 +98,8 @@ params:
     lr_threshold: 0.01 # target kl for adaptive lr
     truncate_grads: True
     grad_norm: 1.
-    steps_num: 60  # this has to be geq seq_length
-    minibatch_size: 199980
+    steps_num: 50  # this has to be geq seq_length
+    minibatch_size: 200000
     mini_epochs: 8
     critic_coef: 2
     clip_value: True
