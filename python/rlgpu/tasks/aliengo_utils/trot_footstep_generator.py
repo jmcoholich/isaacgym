@@ -1,6 +1,6 @@
-from rlgpu.tasks.aliengo_utils.utils import batch_z_2D_rot_mat
-import torch
 from isaacgym import gymapi as g
+import torch
+from rlgpu.tasks.aliengo_utils.utils import batch_z_2D_rot_mat
 
 
 class TrotFootstepGenerator:
@@ -118,8 +118,13 @@ class TrotFootstepGenerator:
         y_addition = torch.arange(
             (self.cfg['n_cycles'] + 1) * 2 - 1,
             device=self.device).unsqueeze(-1) * step_len.view(num_to_gen, 1, 1)
-        footsteps[:, 1:, :, 0] += x_addition * torch.cos(headings).unsqueeze(-1).unsqueeze(-1)
-        footsteps[:, 1:, :, 1] += y_addition * torch.sin(headings).unsqueeze(-1).unsqueeze(-1)
+
+        # ellipse scaling
+        x_dia = 1.0
+        y_dia = 0.33
+        rad = (x_dia * y_dia) / (x_dia**2 * torch.sin(headings)**2 + y_dia**2 * torch.cos(headings)**2)**0.5
+        footsteps[:, 1:, :, 0] += x_addition * (torch.cos(headings) * rad).unsqueeze(-1).unsqueeze(-1)
+        footsteps[:, 1:, :, 1] += y_addition * (torch.sin(headings) * rad).unsqueeze(-1).unsqueeze(-1)
 
         # linearly increase randomization for the first n footsteps
         full_rand_by_footstep_num = 10
@@ -128,7 +133,34 @@ class TrotFootstepGenerator:
         noise = (torch.rand_like(footsteps) - 0.5) * self.cfg['footstep_rand']
         noise[:, :full_rand_by_footstep_num] *= schedule
         footsteps[:] += noise
+
+        # # plot footsteps in matplotlib for debugging and save to file
+        # # Make 6 subplots (3 columns, 2 rows)
+        # import sys
+        # import matplotlib.pyplot as plt
+        # fig, axs = plt.subplots(1, 1)
+        # for i in range(100):
+        #     for j in range(0, self.cfg['n_cycles']//4, 4):
+        #         random_color = torch.rand(3).reshape(1, 3)
+        #         # ax[].scatter(
+        #         #     footsteps[0, i, :, 1].cpu().numpy(),
+        #         #     footsteps[0, i, :, 0].cpu().numpy(),
+        #         #     c=random_color
+        #         #     )
+        #         axs.scatter(
+        #             footsteps[i, j, :, 1].cpu().numpy(),
+        #             footsteps[i, j, :, 0].cpu().numpy(),
+        #             c=random_color
+        #             )
+        #     axs.set_aspect('equal')
+        #     # put axis lines at 0 so I know where origin is
+        #     axs.axhline(0, color='black', lw=0.5)
+        #     axs.axvline(0, color='black', lw=0.5)
+
+        # plt.show()
+        # sys.exit(0)
         return footsteps
+
 
     def plot_footstep_targets(self, current_only=False):
         hit_so_far = self.task.args.plot_values
