@@ -139,6 +139,23 @@ class Observation():
             output += self.handles[part][1]
         raise ValueError("'footstep_target_distance' is not in observation.")
 
+    def obs_idx_to_part(self, idx):
+        output = 0
+        for part in self.parts:
+            output += self.handles[part][1]
+            # if output == idx:
+            if output > idx:
+                return part
+        raise ValueError("Index out of bounds.")
+
+    def part_to_obs_idx(self, part):
+        output = 0
+        for p in self.parts:
+            if p == part:
+                return output
+            output += self.handles[p][1]
+        raise ValueError("Part not in observation.")
+
     def __call__(self, recalculating_obs=False, parts=None, add_noise=None):
         # for part in self.parts:
         #     print(part)

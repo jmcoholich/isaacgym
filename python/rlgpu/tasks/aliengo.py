@@ -301,10 +301,16 @@ class Aliengo(BaseTask):
                 h = self.cfg["rough_terrain_blocks"]["height"]
             else:
                 h = 0.0
+            env = 0
             self.gym.viewer_camera_look_at(
-                self.viewer, self.envs[0],
-                g.Vec3(self.base_pos[0, 0] + 0.5, self.base_pos[0, 1] + 1.75, 0.75 + h),
-                g.Vec3(self.base_pos[0, 0] + 0.5, self.base_pos[0, 1], 0.25 + h))
+                self.viewer, self.envs[env],
+                # side view
+                g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1] + 1.75, 0.75 + h),
+                g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1], 0.25 + h),
+                # top view
+                # g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1]+ 0.01, 1.75 + h),
+                # g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1], 0.25 + h),
+                )
 
         actions = actions.clamp(-1.0, 1.0)
         if self.cfg["actionSpace"] == "pmtg_delta":

@@ -108,7 +108,10 @@ def batch_x_rot_mat(theta):
 
 # @torch.jit.script
 def batch_quat_to_euler(q):
-    """https://github.com/bulletphysics/bullet3/blob/5ae9a15ecac7bc7e71f1ec1b544a55135d7d7e32/src/Bullet3Common/b3Quaternion.h
+    """
+    https://github.com/bulletphysics/bullet3/blob/5ae9a15ecac7bc7e71f1ec1b544a55135d7d7e32/src/Bullet3Common/b3Quaternion.h#L160C10-L161C1
+
+    Does ZYX euler angles. This is the same as the default in pybullet.
     """
     # TODO make sure I'm wrapping angles if I need to. However, if quats from root tensor are all unit quats, is there no need to?
     e = torch.zeros(q.shape[0], 3, device=q.device)
@@ -139,3 +142,15 @@ def batch_quat_to_6d(q):
     o[:, 4] = q[:, w].square() - q[:, x].square() + q[:, y].square() - q[:, z].square()
     o[:, 5] = 2 * (q[:, y] * q[:, z] - q[:, w] * q[:, x])
     return o
+
+
+if __name__ == '__main__':
+    output = batch_quat_to_euler(
+        torch.tensor([[ 0.1567777, 0.1567777, 0.1567777, 0.9624252 ],
+                      [ 0.2294157, 0.2294157, 0.2294157, 0.9176629 ],
+                      [ 0, 0, 0.3826834, 0.9238796 ]]))
+    # should return [ x: 0.3711587, y: 0.2553821, z: 0.3711587 ]
+    # should return [ x: 0.5880026, y: 0.3212886, z: 0.5880026 ]
+    # should return [ x: 0, y: 0, z: 0.785398 ]
+    print(output)
+    breakpoint()
