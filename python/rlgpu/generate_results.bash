@@ -10,9 +10,9 @@ FLAT_POLICY_ID=$2
 RUN_NAME=$3
 # default 2
 JOBS_PER_GPU=${4:-1}
-
+DES_DIR_COEF=$5
 # Evaluate the hierarchical policy
-python evaluate_policy.py --id $HIERARCHICAL_POLICY_ID --flat_policy False --jobs_per_gpu $JOBS_PER_GPU
+python evaluate_policy.py --id $HIERARCHICAL_POLICY_ID --flat_policy False --jobs_per_gpu $JOBS_PER_GPU --des_dir_coef $DES_DIR_COEF
 
 # Evaluate the flat policy
 python evaluate_policy.py --id $FLAT_POLICY_ID --flat_policy True --jobs_per_gpu $JOBS_PER_GPU
