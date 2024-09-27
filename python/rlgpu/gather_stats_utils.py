@@ -1,6 +1,6 @@
 import wandb
 from subprocess import Popen, PIPE, run
-
+import time
 
 def detect_num_gpus():
     output = run("nvidia-smi --query-gpu=name --format=csv,noheader | wc -l",
@@ -100,7 +100,7 @@ def gpu_parallel_cmd_runner(cmds, jobs_per_gpu=1):
     total_cmds = len(cmds)
     # now, run all this stuff in parallel
     num_gpus = detect_num_gpus()
-    jobs = [[None] * jobs_per_gpu] * num_gpus
+    jobs = [[None for _ in range(jobs_per_gpu)] for _ in range(num_gpus)]
     cmd_counter = 0
     # init jobs
     for j in range(jobs_per_gpu):
@@ -110,17 +110,23 @@ def gpu_parallel_cmd_runner(cmds, jobs_per_gpu=1):
             cmd = cmds.pop()
             cmd_counter += 1
             print(f"Running command {cmd_counter}/{total_cmds}")
+            cmd += ["--device_id", str(i)]
             print(" ".join(cmd) + '\n')
-            jobs[i][j] = Popen(cmd + ["--device_id", str(i)], stdout=PIPE,
+            jobs[i][j] = Popen(cmd, stdout=PIPE,
                             stderr=PIPE, text=True)
 
     while True:
         for i, gpu in enumerate(jobs):  # check if any of the jobs are done
             for j, job in enumerate(gpu):
+                time.sleep(0.5)
                 if job is not None:
+                    # print(f"Checking job {j} on GPU {i}...")
                     # job.poll() returns None if the job is still running
                     # job.poll() returns an exit code if the job has finished
                     poll = job.poll()
+                    # print(f"job {j} on GPU {i} returned {poll}.")
+                    # print(jobs)
+                    # print()
                 else:
                     poll = None
 
@@ -132,8 +138,9 @@ def gpu_parallel_cmd_runner(cmds, jobs_per_gpu=1):
                         cmd_counter += 1
                         # time.sleep(10.0)  # give previous run plenty of time to exit to avoid issues.
                         print(f"Running command {cmd_counter}/{total_cmds}")
+                        cmd += ["--device_id", str(i)]
                         print(" ".join(cmd) + '\n')
-                        jobs[i][j] = Popen(cmd + ["--device_id", str(i)], stdout=PIPE,
+                        jobs[i][j] = Popen(cmd, stdout=PIPE,
                                         stderr=PIPE, text=True)
                 elif poll is not None and poll != 0:  # unsuccessful exit
                     trace = job.stderr.readlines()

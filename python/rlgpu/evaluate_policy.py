@@ -46,9 +46,9 @@ def get_args():
                         help="Number of env steps to timeout after")
     parser.add_argument("--debug", action="store_true",
                         help="Sets params for fast runs to debugging the pipeline")
-    parser.add_argument("--num_rollouts", type=int, default=20,
+    parser.add_argument("--num_rollouts", type=int, default=5,
                         help="Number of episodes per policy to collect")
-    parser.add_argument("--num_envs", type=int, default=20,
+    parser.add_argument("--num_envs", type=int, default=5,
                         help="Number of envs to run in parallel")
     parser.add_argument("--des_dir_coef", type=float, default=50,
                         help="Coefficient for directional term in "
