@@ -50,7 +50,7 @@ def get_args():
                         help="Number of episodes per policy to collect")
     parser.add_argument("--num_envs", type=int, default=20,
                         help="Number of envs to run in parallel")
-    parser.add_argument("--des_dir_coef", type=int, default=50,
+    parser.add_argument("--des_dir_coef", type=float, default=50,
                         help="Coefficient for directional term in "
                         "value-function footstep target optimiation")
     parser.add_argument("--box_len", type=float, default=0.15,
