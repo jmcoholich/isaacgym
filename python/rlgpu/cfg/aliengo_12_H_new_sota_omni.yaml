@@ -34,8 +34,8 @@ env:
 
   pmtg:
     residual: [0.1, 0.1, 0.1]  # xyz residual for each foot in foot space
-    lb: [-0.15, -0.5, 0.0]  # amplitude, standing_height, frequency
-    ub: [0.25, -0.3, 3.0]
+    lb: [0.0, -0.5, 0.0]  # amplitude, standing_height, frequency
+    ub: [0.5, -0.3, 3.0]
     phase_offset: [0.5, 0.0, 0.0, 0.5]  # walk FL, FR, RL, RR
     step_height: 0.05
 
@@ -68,7 +68,7 @@ env:
   reward:
     # base_x_vel: [0.0, 1.0]  # rew term coef, clip value
     torque_penalty: [0.0]
-    euler_angle_pen: [0.1, 0.1, 0.0]
+    euler_angle_pen: [0.0, 0.0, 0.0]
     collision_penalty: [0.125]
     hit_footstep: [2.0]
     velocity_towards_footsteps: [0.25, 1000000.0] # coef, clip
