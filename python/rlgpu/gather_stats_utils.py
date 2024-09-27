@@ -124,8 +124,7 @@ def gpu_parallel_cmd_runner(cmds, jobs_per_gpu=1):
                 else:
                     poll = None
 
-                # if poll in {0, -11, 139}:  # successful exit or segmentation fault (I don't care)
-                if poll == 0:
+                if poll in {0, -11, 139}:  # successful exit or segmentation fault (I don't care)
                     if not cmds:  # if there are no more runs
                         jobs[i][j] = None
                     else:  # start another run if there are still runs left
