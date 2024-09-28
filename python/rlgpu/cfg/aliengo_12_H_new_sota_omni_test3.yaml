@@ -1,0 +1,141 @@
+# Trains the low-level on flatground with pmtg
+
+env:
+  numEnvs: 4000
+  envSpacing: 4.0
+  numActions: 15
+  actionSpace: pmtg  # can either be 'pmtg', 'pmtg_delta', 'joints', 'foot_positions'
+  controlFrequencyInv: 1 # this is action repeat
+
+  joint_angle_lb: [-1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795, -2.77507351, -1.22173048, -1.570795  , -2.77507351, -1.22173048, -1.570795  , -2.77507351]
+  joint_angle_ub: [ 1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048,  1.570795  , -0.64577182,  1.22173048, 1.570795  , -0.64577182]
+  # joint_angle_lb: [-1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159, -2.77507351, -1.22173048, -3.14159  , -2.77507351, -1.22173048, -3.14159  , -2.77507351]
+  # joint_angle_ub: [ 1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048,  3.14159  , -0.64577182,  1.22173048, 3.14159  , -0.64577182]
+  foot_pos_lb: [-0.5, -0.5, -0.6]
+  foot_pos_ub: [0.5, 0.5, -0.1]
+  joint_stiffness: 100
+  joint_damping: 5
+  termination:
+    base_z: [0.1, 0.8]  # the height bounds are overridden if there are stepping stones or terrain
+    euler_angles: [0.5, 0.5, 1.0]  # in multiples of pi
+    timeout: [3600] # in simulation steps
+    no_footstep_in: [300]  # terminate if the agent hasn't hit the next footstep in 5 seconds (to prevent rew hacking)
+    out_of_footsteps: [None]
+    out_of_stepping_stones: [None]
+    # end_of_blocks_terrain: [None]
+
+  # pmtg_delta:
+  #   residual: [0.1, 0.1, 0.05]  # xyz residual for each foot in foot space
+  #   lb: [0.0, -0.3, 0.0]  # amplitude, standing_height, frequency
+  #   ub: [0.1, -0.5, 3.0]
+  #   max_change: [0.01, 0.01, 0.05]  # this defines the action limits for amplitude, standing_height, frequency
+  #   phase_offset: [0.5, 0.0, 0.0, 0.5]  # walk FL, FR, RL, RR
+  #   step_height: 0.075
+
+  pmtg:
+    residual: [0.1, 0.1, 0.1]  # xyz residual for each foot in foot space
+    lb: [0.0, -0.5, 0.0]  # amplitude, standing_height, frequency
+    ub: [0.5, -0.3, 1.5]
+    phase_offset: [0.5, 0.0, 0.0, 0.5]  # walk FL, FR, RL, RR
+    step_height: 0.05
+
+  # rough_terrain_blocks:
+  #   height: 2.0
+  #   max_height_range: 0.25
+  #   max_block_spacing: 0.15
+  #   min_block_size: 0.2
+  #   difficulty_growth_factor: 1.25
+  #   robot_spacing: 0.01
+  #   num_levels: 5
+  #   level_length: 2.0
+
+  footstep_target_parameters:
+    step_length: 0.075
+    step_length_rand: 0.15 # range of uniform distribution to randomize step len by
+    radial_range: [-180, 180] # in degrees
+    # step_width: 0.2
+    # step_width_rand: 0.05
+    # base_length: 0.45 # this is the distance between front and back legs nominally
+    # length_offset: -0.02
+    n_cycles: 400 # how many cycles of 4 footsteps to generate in the training env
+    gait: trot
+    footstep_rand: 0.2 # range of uniform displacement to apply to every footstep
+    footstep_distance_threshold: 0.075  # in meters. This get a multiplier based on how close to the center it is.
+    center_rew_multiplier: 0.5
+    hit_both_multiplier: 3.0
+    contact_force_treshold: 5.0 # N
+
+  reward:
+    # base_x_vel: [0.0, 1.0]  # rew term coef, clip value
+    torque_penalty: [0.0]
+    euler_angle_pen: [0.0, 0.0, 0.0]
+    collision_penalty: [0.125]
+    hit_footstep: [2.0]
+    velocity_towards_footsteps: [0.25, 1000000.0] # coef, clip
+    # foot_lift_penalty: [0.125]
+    # foot_lift_penalty_smooth: [0.125]
+    current_footstep_for_logging: [None] # this is purely just for logging, using the structure I already set up
+    curriculum_param_for_logging: [None]
+    smoothness: [0.03125]
+    slip_penalty: [0.125]
+    foot_lift: [0.75]
+    # contact_rew: [0.00]
+    foot_stay: [0.25]
+    # wrong_ss_collision_penalty: [0.125]
+
+  # vision: # automatically gets added to observation if not commented out
+  #   size: 128  # only support square images for now
+  obs_noise: False
+  observation:
+    # - base_position
+    - base_roll
+    - base_pitch
+    # - base_yaw
+    # - base_velocity
+    # - base_angular_velocity
+    - base_roll_velocity
+    - base_pitch_velocity
+
+    # - joint_positions
+    # - joint_velocities
+    - joint_torques
+
+    - foot_positions
+    - foot_velocities
+
+    - trajectory_generator_phase  # for pmtg action space
+    # - trajectory_generator_state  # for pmtg_delta action space
+    - foot_contact_binary
+    - footstep_target_distance_2_ahead
+    - footstep_generator_current_foot_one_hot
+    - previous_action
+    - previous_previous_action
+    # - stepping_stone_state_slim
+
+  prev_obs_stacking: 0
+
+  asset:
+    assetRoot: "../../assets"
+    assetFileName: "urdf/aliengo/urdf/aliengo.urdf"
+
+  plane:
+    staticFriction: 1.0  # [-]
+    dynamicFriction: 0.9  # [-]
+    restitution: 0.        # [-]
+
+  # stepping_stones:
+  #   distance: 10.0  # m
+  #   height_range: [0.0, 0.10]
+  #   # height_range: 0.1
+  #   density: [1.0, 0.5]
+  #   # density: 1.0
+  #   stone_dim: 0.1
+  #   robot_y_spacing: 0.125
+  #   robot_x_spacing: 0.5
+  #   num_rows: 5
+  #   spacing: 0.001  # this is the spacing between the stones on the grid
+  #   height: 2.0
+  #   include_starting_ss: False
+
+task:
+  randomize: False
