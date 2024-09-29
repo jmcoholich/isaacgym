@@ -43,7 +43,7 @@ def save_load_config_file_names(args):
                 ssh_client.connect(ws_ip[ws - 1], 22, args.username)
             print('Connected!\n\n')
             sftp_client = ssh_client.open_sftp()
-            path = os.path.join('isaacgym/python/rlgpu/nn', args.checkpoint, 'run_args.txt')
+            path = os.path.join('quadruped/isaacgym/python/rlgpu/nn', args.checkpoint, 'run_args.txt')
             with sftp_client.open(path, 'r') as f:
                 cfg_train = f.readline().split()[1]
                 cfg_env = f.readline().split()[1]
@@ -151,7 +151,7 @@ def aliengo_params_helper(cfg, cfg_train, args):
     if args.add_ss:
         cfg["env"]["stepping_stones"] = {
             "distance": 10.0,
-            "stone_dim": 0.1,
+            "stone_dim": args.stone_dim,
             "spacing": 0.001,
             "height": 2.0,
             "include_starting_ss": False,

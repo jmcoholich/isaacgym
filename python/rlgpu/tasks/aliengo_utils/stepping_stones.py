@@ -20,8 +20,8 @@ class SteppingStones:
         self.device = device
         self.num_envs = num_envs
         self.stepping_stones_height = self.cfg["height"]
-        self.start_x = -0.5
-        self.y_padding = 1.0
+        self.start_x = -self.cfg["distance"]
+        self.y_padding = 2.0
         # self.include_start_ss = self.cfg.get("include_starting_ss", True)
         (self.stone_pos, self.num_stones, self.eff_ss_size, self.ss_num_x,
         self.ss_num_y, self.is_stone, self.corner_ss_pos) = self.init_stepping_stone_positions()
@@ -73,7 +73,7 @@ class SteppingStones:
                        // -self.cfg['num_rows'])
 
         eff_ss_size = self.cfg['stone_dim'] + self.cfg["spacing"]
-        ss_num_x = int(self.cfg["distance"] // eff_ss_size + 1)
+        ss_num_x = int(self.cfg["distance"] * 2 // eff_ss_size + 1)
         ss_num_y = int((self.cfg['robot_y_spacing'] * env_rows + 2
                         * self.y_padding) // eff_ss_size + 1)
         ss_grid_size = ss_num_x * ss_num_y

@@ -427,6 +427,8 @@ def get_args(benchmark=False, use_rlg_config=False):
             "help": "For End-to-end sweep"},
         {"name": "--y_vel_pen", "type": float,
             "help": "For End-to-end sweep"},
+        {"name": "--stone_dim", "type": float, "default": 0.2,
+            "help": "dimension of square stepping stones"},
         {"name": "--smoothness", "type": float,
             "help": "For End-to-end sweep"},
         {"name": "--plot_all_targets", "action": "store_true",
