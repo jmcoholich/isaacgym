@@ -144,7 +144,27 @@ def batch_quat_to_6d(q):
     return o
 
 
-if __name__ == '__main__':
+def plot_traj_gen():
+    import matplotlib.pyplot as plt
+    import numpy as np
+    phases = np.linspace(0, 3, 100)
+    x = x_traj(torch.tensor(phases)).numpy()
+    z = z_traj(torch.tensor(phases)).numpy()
+    fig = plt.figure()
+    fig.suptitle('X Trajectory')
+    plt.plot(phases, x)
+    fig = plt.figure()
+
+    fig.suptitle('Z Trajectory')
+    line_thickness = 6
+    plt.plot(phases, z, linewidth=line_thickness)
+
+    # plt.xlim(-2, 5)
+    # plt.ylim(-3, 3)
+    plt.show()
+
+
+def test_batch_quat_to_euler():
     output = batch_quat_to_euler(
         torch.tensor([[ 0.1567777, 0.1567777, 0.1567777, 0.9624252 ],
                       [ 0.2294157, 0.2294157, 0.2294157, 0.9176629 ],
@@ -154,3 +174,8 @@ if __name__ == '__main__':
     # should return [ x: 0, y: 0, z: 0.785398 ]
     print(output)
     breakpoint()
+
+
+if __name__ == '__main__':
+    # test_batch_quat_to_euler()
+    plot_traj_gen()

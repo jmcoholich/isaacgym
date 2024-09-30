@@ -189,6 +189,23 @@ class Aliengo(BaseTask):
         if self.args.plot_contact_locations:
             self.plot_footsteps = FootstepPlotter(self)
 
+        # env = 0
+        # if self.is_stepping_stones:
+        #     h = self.cfg["stepping_stones"]["height"]
+        # elif self.is_rough_terrain_blocks:
+        #     h = self.cfg["rough_terrain_blocks"]["height"]
+        # else:
+        #     h = 0.0
+        # self.gym.viewer_camera_look_at(
+        #     self.viewer, self.envs[env],
+        #     # side view
+        #     g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1] + 1.75, 0.75 + h),
+        #     g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1], 0.25 + h),
+        #     # top view
+        #     # g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1]+ 0.01, 1.75 + h),
+        #     # g.Vec3(self.base_pos[env, 0] + 0.5, self.base_pos[env, 1], 0.25 + h),
+        #     )
+
 
     def _acquire_tensors(self):
         if self.is_stepping_stones:

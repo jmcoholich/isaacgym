@@ -44,6 +44,9 @@ def save_load_config_file_names(args):
             print('Connected!\n\n')
             sftp_client = ssh_client.open_sftp()
             path = os.path.join('quadruped/isaacgym/python/rlgpu/nn', args.checkpoint, 'run_args.txt')
+            if ws == 7:
+                path = os.path.join("/coc/testnvme/jcoholich3/", path)
+            print("path: ", path)
             with sftp_client.open(path, 'r') as f:
                 cfg_train = f.readline().split()[1]
                 cfg_env = f.readline().split()[1]
