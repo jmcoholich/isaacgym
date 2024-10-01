@@ -209,6 +209,7 @@ def generate_success_only_plot(data, sota, args):
     figsize = (20.0, 5.0)
     name = "largeplot"
     _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name)
 
 
 def generate_small_plot(data, sota, args):
@@ -220,6 +221,7 @@ def generate_small_plot(data, sota, args):
     figsize = (5.0, 2.5)
     name = "smallplot"
     _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name)
 
 
 def generate_in_place_results_table(data, sota, args):
@@ -729,6 +731,70 @@ def _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
     plt.savefig(path, bbox_inches='tight')
     print(f"Saved plot at {path}")
 
+
+def _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name):
+    """Generate small bar plot of success rate on a more limited sweep of environments"""
+
+    plt.figure(figsize=figsize)
+    plt.xlabel("Stepping Stone Density / Stone Height Variation (m)", y=-0.025)
+    plt.title("Proposed Method vs End-to-end Policy", y=0.95, x=0.5)
+    ax = plt.gca()
+    marker = itertools.cycle(('s', 'o', 'H', 'D', "^", ">", "<", 's', 'd'))
+    # ax.grid()
+
+    width = 0.35  # width of the bars
+    x_indices = np.arange(len(envs_to_plot) + 1)  # +1 for "Flatground"
+    bar_offset = 0  # To shift bars horizontally for different methods
+
+    for method in data:
+        vals = avg_across_seeds(data[method], metric)
+        fg_data = vals.pop("flatground")
+
+        sorted_keys = envs_to_plot
+        sorted_keys.sort(key=lambda x: (x[1], -x[0]))
+
+        y_points = [fg_data["mean"].item()]
+        errors = [fg_data["std"].item()]
+        x_labels = ["Flatground"]
+
+        for key in sorted_keys:
+            y_points.append(vals[key]["mean"].item())
+            errors.append(vals[key]["std"].item())
+            x_labels.append(f"{key[0] * 100}% / {key[1]}")
+
+        # ax.bar(x_indices + bar_offset, y_points, width=width, yerr=errors, label=method, capsize=3.0)
+        y_points = [pt * 100 for pt in y_points]
+        ax.bar(x_indices + bar_offset, y_points, width=width, label=method, capsize=3.0)
+        for i, v in enumerate(y_points):
+            ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.0f}", ha="center", va="bottom", fontsize=6)
+        bar_offset += width  # Shift next method's bars horizontally
+
+    ax.set_xticks(x_indices + width / 2)  # Align ticks in the middle of grouped bars
+    ax.set_xticklabels(x_labels, rotation=45, ha="right")
+
+    # ax.axvspan(1 - 0.5, 4 + 0.5, facecolor='b', alpha=0.1)
+    # ax.axvspan(4.5, 8.5, facecolor='r', alpha=0.1)
+
+    ax.set_ylabel(metric)
+    ax.set_title(metric)
+    ax.legend(loc=(0.1, 1.02), ncol=2)
+
+    if metric == "successful":
+        ax.set_title("Terrain Traversal Success Rate", pad=25.0)
+        ax.set_ylabel("Success Rate (%)")
+    elif metric == "reward":
+        ax.set_title("Fraction of Per-timestep Training Reward Achieved")
+        ax.set_ylabel("Normalized Reward")
+    elif metric == "distance_traveled":
+        ax.set_title("Distance Traveled per Episode")
+        ax.set_ylabel("Distance Traveled (m)")
+    elif metric == "eps_len":
+        ax.set_title("Episode Length")
+        ax.set_ylabel("Episode Length (timesteps)")
+
+    path = os.path.join(args.save_dir, name + "_bars.svg")
+    plt.savefig(path, bbox_inches='tight')
+    print(f"Saved plot at {path}")
 
 if __name__ == "__main__":
     main()
