@@ -36,7 +36,7 @@ def get_args():
 
     # other args
     parser.add_argument("--jobs_per_gpu", type=int, default=1)
-    parser.add_argument("--ws", type=str, default=None)
+    parser.add_argument("--ws", type=str, default=-1)
     parser.add_argument("--wandb_project", type=str,
                        help="Project to pull the runs from.")
     parser.add_argument("--wandb_username", type=str,
@@ -160,7 +160,7 @@ def generate_commands(args):
             "--num_envs", str(args.num_envs),
             "--gather_stats", str(args.num_rollouts),
             "--timeout", str(args.timeout),
-            "--ws", args.ws,
+            "--ws", str(args.ws),
             "--data_dir", data_dir
         )
 
