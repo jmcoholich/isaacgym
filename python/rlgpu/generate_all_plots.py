@@ -75,6 +75,7 @@ def main():
         score_runs(data, sota, args, "End-to-end")
     generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
+    generate_collision_small_plot(data, sota, args)
     generate_success_only_plot(data, sota, args)
     generate_in_place_results_table(data, sota, args)
     generate_optimized_footstep_trajectories_plot(data, sota, args)
@@ -215,6 +216,29 @@ def generate_small_plot(data, sota, args):
     figsize = (5.0, 2.5)
     name = "smallplot"
     _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+
+def generate_collision_small_plot(data, sota, args):
+    envs_to_plot = [
+        (.7, 0.0),
+        (.8, 0.0),
+        (.9, 0.0),
+        (1.0, 0.0),
+
+        (.7, 0.05),
+        (.8, 0.05),
+        (.9, 0.05),
+        (1.0, 0.05),
+
+        (.7, 0.075),
+        (.8, 0.075),
+        (.9, 0.075),
+        (1.0, 0.075),
+    ]
+    metric = "collisions"
+    figsize = (5.0, 2.5)
+    name = "collisions_smallplot"
+    # _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
     _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name)
 
 
@@ -530,6 +554,7 @@ def _load_and_process_data(path, method, checkpoint, env_key):
     with gzip.GzipFile(path, 'r') as f:
         x = CPU_Unpickler(f).load()
     output["successful"] = x["succcessful"]
+    output["collisions"] = x["collisions"]
     output["reward"] = x["reward"].squeeze().sum(dim=1)
     output["eps_len"] = x["still_running"].sum(dim=1).squeeze().to(torch.long) - 2
     idx = output["eps_len"] - 1
@@ -786,6 +811,9 @@ def _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, n
     elif metric == "eps_len":
         ax.set_title("Episode Length")
         ax.set_ylabel("Episode Length (timesteps)")
+    elif metric == "collisions":
+        ax.set_title("Collisions")
+        ax.set_ylabel("Average Number of Collisions")
 
     path = os.path.join(args.save_dir, name + "_bars.svg")
     plt.savefig(path, bbox_inches='tight')

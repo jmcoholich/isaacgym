@@ -67,6 +67,9 @@ def get_args():
 
 def main():
     args = get_args()
+    # args.debug = True
+    # args.num_envs = 2
+    # args.num_rollouts = 2
     cmds = generate_commands(args)
     gpu_parallel_cmd_runner(cmds, jobs_per_gpu=args.jobs_per_gpu)
 
