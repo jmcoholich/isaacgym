@@ -178,6 +178,9 @@ def aliengo_params_helper(cfg, cfg_train, args):
         else:
             cfg_train['params']["config"]['player'] = {}
             cfg_train['params']["config"]['player']['print_stats'] = False
+
+    if args.play:
+        cfg["env"]["termination"]["euler_angles"][2] = 999
         # cfg_train['params']["config"]['player']['determenistic'] = args.determenistic
         # if args.gather_stats == -1:
         #     args.gather_stats = args.num_envs
