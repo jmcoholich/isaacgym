@@ -36,6 +36,7 @@ def get_args():
 
     # other args
     parser.add_argument("--jobs_per_gpu", type=int, default=1)
+    parser.add_argument("--ws", type=str, default=None)
     parser.add_argument("--wandb_project", type=str,
                        help="Project to pull the runs from.")
     parser.add_argument("--wandb_username", type=str,
@@ -81,31 +82,48 @@ def generate_commands(args):
         ]
         args.timeout = 100
     else:
+        # env_difficulties = [
+        #     # (None, None),  # this is for flat ground
+        #     (.25, 0.0),  # (percent infill, stepping stone height variation)
+        #     (.375, 0.0),
+        #     (.50, 0.0),
+        #     (.625, 0.0),
+        #     (.75, 0.0),
+        #     (.875, 0.0),
+        #     (1.0, 0.0),
+
+        #     (.25, 0.05),
+        #     (.375, 0.05),
+        #     (.50, 0.05),
+        #     (.625, 0.05),
+        #     (.75, 0.05),
+        #     (.875, 0.05),
+        #     (1.0, 0.05),
+
+        #     (.25, 0.1),
+        #     (.375, 0.1),
+        #     (.50, 0.1),
+        #     (.625, 0.1),
+        #     (.75, 0.1),
+        #     (.875, 0.1),
+        #     (1.0, 0.1),
+        # ]
         env_difficulties = [
             # (None, None),  # this is for flat ground
-            (.25, 0.0),  # (percent infill, stepping stone height variation)
-            (.375, 0.0),
-            (.50, 0.0),
-            (.625, 0.0),
-            (.75, 0.0),
-            (.875, 0.0),
+            (.7, 0.0),
+            (.8, 0.0),
+            (.9, 0.0),
             (1.0, 0.0),
 
-            (.25, 0.05),
-            (.375, 0.05),
-            (.50, 0.05),
-            (.625, 0.05),
-            (.75, 0.05),
-            (.875, 0.05),
+            (.7, 0.05),
+            (.8, 0.05),
+            (.9, 0.05),
             (1.0, 0.05),
 
-            (.25, 0.1),
-            (.375, 0.1),
-            (.50, 0.1),
-            (.625, 0.1),
-            (.75, 0.1),
-            (.875, 0.1),
-            (1.0, 0.1),
+            (.7, 0.075),
+            (.8, 0.075),
+            (.9, 0.075),
+            (1.0, 0.075),
         ]
 
     if args.run_name:
@@ -142,7 +160,7 @@ def generate_commands(args):
             "--num_envs", str(args.num_envs),
             "--gather_stats", str(args.num_rollouts),
             "--timeout", str(args.timeout),
-            # "--ws", str(determine_ws_arg(id_)), # disable this for now. Just assume its all on the same workstation
+            "--ws", args.ws,
             "--data_dir", data_dir
         )
 

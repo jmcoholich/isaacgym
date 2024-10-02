@@ -1,0 +1,1 @@
+Namespace(box_len=0.15, debug=False, des_dir_coef=50, flat_policy=False, id='240925010104830812', jobs_per_gpu=1, nn_ft_dist=0.2, nn_ft_width=0.0, num_envs=20, num_rollouts=20, run_name=None, timeout=5000, wandb_project=None, wandb_username=None)

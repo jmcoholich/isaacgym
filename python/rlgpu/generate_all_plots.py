@@ -129,29 +129,20 @@ def score_runs(data, sota, args, baseline_run_name):
     have a higher success rate than the baseline on."""
     scores = {}
     envs_to_plot = ['flatground',
-        (.25, 0.0),  # (percent infill, stepping stone height variation)
-        (.375, 0.0),
-        (.50, 0.0),
-        (.625, 0.0),
-        (.75, 0.0),
-        (.875, 0.0),
+        (.7, 0.0),
+        (.8, 0.0),
+        (.9, 0.0),
         (1.0, 0.0),
 
-        (.25, 0.05),
-        (.375, 0.05),
-        (.50, 0.05),
-        (.625, 0.05),
-        (.75, 0.05),
-        (.875, 0.05),
+        (.7, 0.05),
+        (.8, 0.05),
+        (.9, 0.05),
         (1.0, 0.05),
 
-        (.25, 0.1),
-        (.375, 0.1),
-        (.50, 0.1),
-        (.625, 0.1),
-        (.75, 0.1),
-        (.875, 0.1),
-        (1.0, 0.1),
+        (.7, 0.075),
+        (.8, 0.075),
+        (.9, 0.075),
+        (1.0, 0.075),
     ]
     baseline_scores = {}
     temp = avg_across_seeds(data[baseline_run_name], 'successful')
@@ -181,29 +172,20 @@ def score_runs(data, sota, args, baseline_run_name):
 
 def generate_success_only_plot(data, sota, args):
     envs_to_plot = [
-        (.25, 0.0),  # (percent infill, stepping stone height variation)
-        (.375, 0.0),
-        (.50, 0.0),
-        (.625, 0.0),
-        (.75, 0.0),
-        (.875, 0.0),
+        (.7, 0.0),
+        (.8, 0.0),
+        (.9, 0.0),
         (1.0, 0.0),
 
-        (.25, 0.05),
-        (.375, 0.05),
-        (.50, 0.05),
-        (.625, 0.05),
-        (.75, 0.05),
-        (.875, 0.05),
+        (.7, 0.05),
+        (.8, 0.05),
+        (.9, 0.05),
         (1.0, 0.05),
 
-        (.25, 0.1),
-        (.375, 0.1),
-        (.50, 0.1),
-        (.625, 0.1),
-        (.75, 0.1),
-        (.875, 0.1),
-        (1.0, 0.1),
+        (.7, 0.075),
+        (.8, 0.075),
+        (.9, 0.075),
+        (1.0, 0.075),
     ]
     metric = "successful"
     figsize = (20.0, 5.0)
@@ -214,8 +196,20 @@ def generate_success_only_plot(data, sota, args):
 
 def generate_small_plot(data, sota, args):
     envs_to_plot = [
-        (1.0, 0.0), (0.75, 0.0), (0.5, 0.0), (0.25, 0.0),
-        (1.0, 0.1), (0.75, 0.1), (0.5, 0.1), (0.25, 0.1)
+        (.7, 0.0),
+        (.8, 0.0),
+        (.9, 0.0),
+        (1.0, 0.0),
+
+        (.7, 0.05),
+        (.8, 0.05),
+        (.9, 0.05),
+        (1.0, 0.05),
+
+        (.7, 0.075),
+        (.8, 0.075),
+        (.9, 0.075),
+        (1.0, 0.075),
     ]
     metric = "successful"
     figsize = (5.0, 2.5)
@@ -285,7 +279,8 @@ def print_latex_table(r):
     # print(r"\begin{tabular}{ p{0.1\linewidth}|p{0.07\linewidth} p{0.07\linewidth} p{0.07\linewidth} p{0.09\linewidth} p{0.07\linewidth} p{0.07\linewidth} } ")
     # print(r"Footstep Target Selection Method & Reward per Timestep & Reward per Footstep & Reward per Episode & Episode Length (timesteps) & Footstep Targets Hit & Timesteps per Footstep\\ ")
     # print(r"\hline")
-    metrics = ["rew/timestep", "rew/footstep", "rew/episode", "episode_len", "targets_hit", "time/target"]
+    # metrics = ["rew/timestep", "rew/footstep", "rew/episode", "episode_len", "targets_hit", "time/target"]
+    metrics = ["rew/episode", "episode_len", "targets_hit"]
     keys = ["in_place_rand", "in_place_fixed", "in_place_opt"]
     titles = ["Random", "Fixed", "Optimized"]
     maxes = {key: (None, -float("inf")) for key in metrics}

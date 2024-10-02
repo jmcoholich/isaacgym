@@ -349,8 +349,8 @@ class TrotFootstepGenerator:
             self.counter[hit_targets].clone()
         self.counter += 1
 
-        if self.task.args.two_ahead_opt:
-            self.update_next_next_targets()
+        # if self.task.args.two_ahead_opt:
+        #     self.update_next_next_targets()
 
         if self.rand_every_timestep:
             self.rand_next_footstep()
