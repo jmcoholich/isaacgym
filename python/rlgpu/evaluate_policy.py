@@ -43,7 +43,7 @@ def get_args():
                        help="WandB username to pull info from")
     parser.add_argument("--flat_policy", type=str2bool,
                        help="pass True if the policy is a flat RL policy, False if it is a hierarchical policy")
-    parser.add_argument("--timeout", type=int, default=5000,
+    parser.add_argument("--timeout", type=int, default=10000,
                         help="Number of env steps to timeout after")
     parser.add_argument("--debug", action="store_true",
                         help="Sets params for fast runs to debugging the pipeline")
@@ -159,13 +159,24 @@ def generate_commands(args):
             "--checkpoint", str(id_),
             "--num_envs", str(args.num_envs),
             "--gather_stats", str(args.num_rollouts),
-            "--timeout", str(args.timeout),
+            "--timeout", str(10_000),
             "--ws", str(args.ws),
             "--data_dir", data_dir
         )
 
         if args.flat_policy == False:
-            cmds.extend(generate_in_place_cmds(args, cmd_base, id_))
+            short_time_cmd_base = (
+                "python", "rlg_train.py",
+                "--play",
+                "--headless",
+                "--checkpoint", str(id_),
+                "--num_envs", str(args.num_envs),
+                "--gather_stats", str(args.num_rollouts),
+                "--timeout", str(500),
+                "--ws", str(args.ws),
+                "--data_dir", data_dir
+            )
+            cmds.extend(generate_in_place_cmds(args, short_time_cmd_base, id_))
         else:
             cmds.extend([list(cmd_base) + ['--no_ss', "--save_fname", str(id_) + "__" + "flatground"]])
         cmds.extend(generate_training_reward_cmd(args, cmd_base, id_))
