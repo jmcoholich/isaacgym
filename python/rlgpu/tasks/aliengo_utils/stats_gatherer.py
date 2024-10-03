@@ -61,7 +61,7 @@ class StatsGatherer:
         data = {"still_running": torch.zeros(self.max_episodes, self.task.cfg["termination"]["timeout"][0] + 2, 1, device=self.device),
                 "reward": torch.zeros(self.max_episodes, self.task.cfg["termination"]["timeout"][0] + 2, 1, device=self.device),
                 "succcessful": torch.zeros(self.max_episodes, device=self.device),
-                "collisions": torch.zeros(self.max_episodes, device=self.device),
+                "collisions": torch.zeros(self.max_episodes, self.task.cfg["termination"]["timeout"][0] + 2, 1, device=self.device),
                 }
         if self.task.is_footsteps:
             data.update({
@@ -93,7 +93,7 @@ class StatsGatherer:
 
         self.data["still_running"][start: end][self.still_running,  self.task.progress_buf[0], 0] = True
         self.data["reward"][start: end][self.still_running,  self.task.progress_buf[0], 0] = self.task.rew_buf[self.still_running]
-        self.data["collisions"][start: end][self.still_running] += \
+        self.data["collisions"][start: end][self.still_running, self.task.progress_buf[0], 0] = \
             (self.task.body_contact_forces[[self.still_running]].abs() > 0.0).any(-1).count_nonzero(-1).float()
 
     def save_data(self):
