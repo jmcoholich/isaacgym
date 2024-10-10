@@ -1,3 +1,6 @@
+# Hierarchical Reinforcement Learning and Value Optimization for Challenging Quadruped Locomotion
+![Planning and control architecture](image.png)
+
 # Isaacgym
 
 Modified by Jeremiah Coholich for use in training on the [Unitree Aliengo](https://www.unitree.com/products/aliengo/) robot for the project [Hierarchical Reinforcement Learning and Value Optimization for Challenging Quadruped Locomotion](https://www.jeremiahcoholich.com/publication/hrl_optim/).

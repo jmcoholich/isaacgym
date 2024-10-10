@@ -5,7 +5,7 @@ data/
 *.svg
 *.pkl
 *.pt
-*.pgz
+
 *.pbz2
 python/rlgpu/logs/
 *.pyc
