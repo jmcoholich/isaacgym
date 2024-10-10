@@ -24,6 +24,33 @@ import numpy as np
 from math import log10, floor
 import hashlib
 
+ENVS_TO_PLOT = [
+    # (.7, 0.0),
+    # (.8, 0.0),
+    (.9, 0.0),
+    (1.0, 0.0),
+
+    # (.7, 0.05),
+    # (.8, 0.05),
+    (.9, 0.05),
+    (1.0, 0.05),
+
+    # (.7, 0.075),
+    # (.8, 0.075),
+    (.9, 0.075),
+    (1.0, 0.075),
+
+    # (.7, 0.1),
+    # (.8, 0.1),
+    (.9, 0.1),
+    (1.0, 0.1),
+
+    # (.7, 0.125),
+    # (.8, 0.125),
+    (.9, 0.125),
+    (1.0, 0.125),
+]
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -73,12 +100,12 @@ def main():
 
     if args.score_runs:
         score_runs(data, sota, args, "End-to-end")
-    generate_sup_plot(data, sota, args)
+    # generate_sup_plot(data, sota, args)
     generate_small_plot(data, sota, args)
-    generate_collision_small_plot(data, sota, args)
-    generate_success_only_plot(data, sota, args)
-    generate_in_place_results_table(data, sota, args)
-    generate_optimized_footstep_trajectories_plot(data, sota, args)
+    # generate_collision_small_plot(data, sota, args)
+    # generate_success_only_plot(data, sota, args)
+    # generate_in_place_results_table(data, sota, args)
+    # generate_optimized_footstep_trajectories_plot(data, sota, args)
 
 
 class CPU_Unpickler(pickle.Unpickler):
@@ -130,30 +157,30 @@ def score_runs(data, sota, args, baseline_run_name):
     have a higher success rate than the baseline on."""
     scores = {}
     envs_to_plot = ['flatground',
-        (.7, 0.0),
+        # (.7, 0.0),
         (.8, 0.0),
         (.9, 0.0),
         (1.0, 0.0),
 
-        (.7, 0.05),
+        # (.7, 0.05),
         (.8, 0.05),
         (.9, 0.05),
         (1.0, 0.05),
 
-        (.7, 0.075),
+        # (.7, 0.075),
         (.8, 0.075),
         (.9, 0.075),
         (1.0, 0.075),
 
-        (.7, 0.1),
+        # (.7, 0.1),
         (.8, 0.1),
         (.9, 0.1),
         (1.0, 0.1),
 
-        (.7, 0.125),
-        (.8, 0.125),
-        (.9, 0.125),
-        (1.0, 0.125),
+        # # (.7, 0.125),
+        # (.8, 0.125),
+        # (.9, 0.125),
+        # (1.0, 0.125),
     ]
     baseline_scores = {}
     temp = avg_across_seeds(data[baseline_run_name], 'successful')
@@ -183,30 +210,30 @@ def score_runs(data, sota, args, baseline_run_name):
 
 def generate_success_only_plot(data, sota, args):
     envs_to_plot = [
-        (.7, 0.0),
+        # (.7, 0.0),
         (.8, 0.0),
         (.9, 0.0),
         (1.0, 0.0),
 
-        (.7, 0.05),
+        # (.7, 0.05),
         (.8, 0.05),
         (.9, 0.05),
         (1.0, 0.05),
 
-        (.7, 0.075),
+        # (.7, 0.075),
         (.8, 0.075),
         (.9, 0.075),
         (1.0, 0.075),
 
-        (.7, 0.1),
+        # (.7, 0.1),
         (.8, 0.1),
         (.9, 0.1),
         (1.0, 0.1),
 
-        (.7, 0.125),
-        (.8, 0.125),
-        (.9, 0.125),
-        (1.0, 0.125),
+        # # (.7, 0.125),
+        # (.8, 0.125),
+        # (.9, 0.125),
+        # (1.0, 0.125),
     ]
     metric = "successful"
     figsize = (20.0, 5.0)
@@ -217,63 +244,74 @@ def generate_success_only_plot(data, sota, args):
 
 def generate_small_plot(data, sota, args):
     envs_to_plot = [
-        (.7, 0.0),
+        # (.7, 0.0),
         (.8, 0.0),
         (.9, 0.0),
         (1.0, 0.0),
 
-        (.7, 0.05),
+        # (.7, 0.05),
         (.8, 0.05),
         (.9, 0.05),
         (1.0, 0.05),
 
-        (.7, 0.075),
+        # (.7, 0.075),
         (.8, 0.075),
         (.9, 0.075),
         (1.0, 0.075),
 
-        (.7, 0.1),
+        # (.7, 0.1),
         (.8, 0.1),
         (.9, 0.1),
         (1.0, 0.1),
 
-        (.7, 0.125),
-        (.8, 0.125),
-        (.9, 0.125),
-        (1.0, 0.125),
+        # (.7, 0.125),
+        # (.8, 0.125),
+        # (.9, 0.125),
+        # (1.0, 0.125),
     ]
-    metric = "successful"
+    metric = "distance_traveled"
     figsize = (5.0, 2.5)
-    name = "smallplot"
-    _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    name = "smallplot_dist_traveled"
+    # _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
     _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    metric = "reward"
+    figsize = (5.0, 2.5)
+    name = "smallplot_norm_rewards"
+    # _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    metric = "collisions"
+    figsize = (5.0, 2.5)
+    name = "smallplot_collisions"
+    # _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+    _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, name)
+
 
 def generate_collision_small_plot(data, sota, args):
     envs_to_plot = [
-        (.7, 0.0),
+        # (.7, 0.0),
         (.8, 0.0),
         (.9, 0.0),
         (1.0, 0.0),
 
-        (.7, 0.05),
+        # (.7, 0.05),
         (.8, 0.05),
         (.9, 0.05),
         (1.0, 0.05),
 
-        (.7, 0.075),
+        # (.7, 0.075),
         (.8, 0.075),
         (.9, 0.075),
         (1.0, 0.075),
 
-        (.7, 0.1),
+        # (.7, 0.1),
         (.8, 0.1),
         (.9, 0.1),
         (1.0, 0.1),
 
-        (.7, 0.125),
-        (.8, 0.125),
-        (.9, 0.125),
-        (1.0, 0.125),
+        # (.7, 0.125),
+        # (.8, 0.125),
+        # (.9, 0.125),
+        # (1.0, 0.125),
     ]
     metric = "collisions"
     figsize = (5.0, 2.5)
@@ -611,30 +649,55 @@ def _load_and_process_data(path, method, checkpoint, env_key):
 def avg_across_seeds(data, metric, floats=False):
     """Takes means of all rollouts for each policy, then compute mean
     and std across the random seeds with these numbers as datapoints."""
-    val = {}
-    all_samples = torch.tensor([])
-    eps_lengths = torch.tensor([])
-    for seed in data.keys():
-        for env in data[seed].keys():
-            if env not in val:
-                val[env] = torch.tensor([])
-            val[env] = torch.cat([val[env], data[seed][env][metric].cpu().float().mean().unsqueeze(0)])
+    assert len(data) == 1  # only key is the run id
+    data = next(iter(data.values())) # keys are now the environments
+    train_env_stats = data["training_rew"]
+    train_rew_per_t = (train_env_stats["reward"] / train_env_stats["eps_len"]).mean().item()
 
-    if metric == "reward":
-        training_rew = val['training_rew'].mean()
-    val.pop('training_rew')
-    for env in val:
+    output = {}
+    # iterate through environment keys and compute mean and std
+    for env in data.keys():
+        if env == "training_rew":
+            continue
+        output[env] = {}
         if metric == "reward":
-            val[env] /= training_rew
-        mean = val[env].mean()
-        std = val[env].std()
-        if np.isnan(std):
-            # std is nan due to only a single seed
-            std = np.ones_like(std)
-        val[env] = {}
-        val[env]["mean"] = mean
-        val[env]["std"] = std
-    return val
+            norm_rew_per_t = data[env][metric] / data[env]["eps_len"] / train_rew_per_t
+            # compute per-timestep reward
+            output[env]["mean"] = norm_rew_per_t.mean().item()
+            output[env]["std"] = norm_rew_per_t.mean().item()
+        elif metric == "collisions":  # divide by number of timesteps in episode
+            # breakpoint()
+            collisions_per_t = data[env][metric] / data[env]["eps_len"]
+            output[env]["mean"] = collisions_per_t.mean().item()
+            output[env]["std"] = collisions_per_t.std().item()
+        else:
+            output[env]["mean"] = data[env][metric].mean().item()
+            output[env]["std"] = data[env][metric].std().item()
+    # val = {}
+    # all_samples = torch.tensor([])
+    # eps_lengths = torch.tensor([])
+    # for seed in data.keys():
+    #     for env in data[seed].keys():
+    #         if env not in val:
+    #             val[env] = torch.tensor([])
+    #         val[env] = torch.cat([val[env], data[seed][env][metric].cpu().float().mean().unsqueeze(0)])
+    # if metric == "reward":
+    #     training_rew = val['training_rew'].mean()
+    # val.pop('training_rew')
+    # for env in val:
+    #     # if metric == "reward":
+    #     #     val[env] /= training_rew
+    #     # if metric == "collisions":
+    #     #     breakpoint()
+    #     mean = val[env].mean()
+    #     std = val[env].std()
+    #     if np.isnan(std):
+    #         # std is nan due to only a single seed
+    #         std = np.ones_like(std)
+    #     val[env] = {}
+    #     val[env]["mean"] = mean
+    #     val[env]["std"] = std
+    return output
 
         # all_samples = torch.cat((all_samples, data[seed][metric].mean().unsqueeze(0)))
         # eps_lengths = torch.cat((all_samples, data[seed]["Episode_Length"].mean().unsqueeze(0)))
@@ -663,7 +726,7 @@ def generate_sup_plot(data, sota, args):
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, sharex=True, figsize=(15 / 1.25 - 1, 3.0 / 1.25 * 4.5 - 2))
     fig.subplots_adjust(hspace=0.5)
     axes = [ax1, ax2, ax3, ax4]
-    metrics = ["successful", "reward", "eps_len", "distance_traveled"]
+    metrics = ["collisions", "reward", "eps_len", "distance_traveled"]
     flag = True
     fig.supxlabel("Stepping Stone Density / Stone Height Variation (m)", y=-0.025)
     fig.suptitle("Proposed Method vs End-to-end Policy", y=0.95, x=0.5)
@@ -672,16 +735,18 @@ def generate_sup_plot(data, sota, args):
         ax.grid()
         for method in data:
             vals = avg_across_seeds(data[method], metric, floats=True)
-            fg_data = vals.pop("flatground")
+            # fg_data = vals.pop("flatground")
             if method == "Proposed Method" or method[0] == "H":
                 for other_metric in ['in_place_rand', 'in_place_opt', 'in_place_fixed']:
                     vals.pop(other_metric)
             # sort into something that I can plot
-            sorted_keys = list(vals.keys())
+            sorted_keys = [x for x in list(vals.keys()) if x in ENVS_TO_PLOT]
             sorted_keys.sort(key=lambda x: (x[1], -x[0]))
-            y_points = [fg_data["mean"].item()]
+            # y_points = [fg_data["mean"].item()]
+            y_points = []
             # errors = [fg_data["std"].item()]
-            x_labels = ["Flatground"]
+            # x_labels = ["Flatground"]
+            x_labels = []
             for key in sorted_keys:
                 y_points.append(vals[key]["mean"].item())
                 # errors.append(vals[key]["std"].item())
@@ -698,19 +763,19 @@ def generate_sup_plot(data, sota, args):
             flag = False
         # ax.set_xticks()
         ax.set_xticklabels(x_labels, rotation=45, ha="right")
-        ax.axvspan(1 - 0.5, 7 + 0.5, facecolor='b', alpha=0.1)
-        ax.axvspan(7.5, 14.5, facecolor='g', alpha=0.1)
-        ax.axvspan(14.5, 21.5, facecolor='r', alpha=0.1)
+        # ax.axvspan(1 - 0.5, 7 + 0.5, facecolor='b', alpha=0.1)
+        # ax.axvspan(7.5, 14.5, facecolor='g', alpha=0.1)
+        # ax.axvspan(14.5, 21.5, facecolor='r', alpha=0.1)
         ax.set_ylabel(metric)
         ax.set_title(metric)
         if metric == "successful":
             ax.set_title("Terrain Traversal Success Rate")
             ax.set_ylabel("Success Rate")
         elif metric == "reward":
-            ax.set_title("Fraction of Per-timestep Training Reward Achieved")
+            ax.set_title("Percentage of Per-timestep Training Reward Achieved")
             ax.set_ylabel("Normalized Reward")
         elif metric == "distance_traveled":
-            ax.set_title("Distance Traveled per Episode")
+            ax.set_title("Distance Traveled")
             ax.set_ylabel("Distance Traveled (m)")
         elif metric == "eps_len":
             ax.set_title("Episode Length")
@@ -772,10 +837,10 @@ def _generate_single_plot(data, sota, args, envs_to_plot, metric, figsize, name)
         ax.set_title("Terrain Traversal Success Rate", pad=25.0)
         ax.set_ylabel("Success Rate")
     elif metric == "reward":
-        ax.set_title("Fraction of Per-timestep Training Reward Achieved")
+        ax.set_title("Percentage of Per-timestep Training Reward Achieved")
         ax.set_ylabel("Normalized Reward")
     elif metric == "distance_traveled":
-        ax.set_title("Distance Traveled per Episode")
+        ax.set_title("Distance Traveled")
         ax.set_ylabel("Distance Traveled (m)")
     elif metric == "eps_len":
         ax.set_title("Episode Length")
@@ -796,37 +861,50 @@ def _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, n
     """Generate small bar plot of success rate on a more limited sweep of environments"""
 
     plt.figure(figsize=figsize)
-    plt.xlabel("Stepping Stone Density / Stone Height Variation (m)", y=-0.025)
-    plt.title("Proposed Method vs End-to-end Policy", y=0.95, x=0.5)
+    plt.xlabel("Terrain Infill (%) / Terrain Height Variation (m)", y=-0.025)
+    # plt.title("Proposed Method vs End-to-end Policy", y=1.10, x=0.5, pad=20)
     ax = plt.gca()
     marker = itertools.cycle(('s', 'o', 'H', 'D', "^", ">", "<", 's', 'd'))
     # ax.grid()
 
     width = 0.35  # width of the bars
-    x_indices = np.arange(len(envs_to_plot) + 1)  # +1 for "Flatground"
+    x_indices = np.arange(len(envs_to_plot))  # +1 for "Flatground"
     bar_offset = 0  # To shift bars horizontally for different methods
-
-    for method in data:
+    subdued_blue = (0.4, 0.6, 0.8)  # Muted blue
+    subdued_orange = (0.9, 0.6, 0.4)  # Muted orange
+    subdued_green = (0.6, 0.8, 0.6)  # Muted green
+    colors = [subdued_green, subdued_blue]
+    if metric == 'reward':
+        factor = 100
+    else:
+        factor = 1
+    for color, method in zip(colors, data):
         vals = avg_across_seeds(data[method], metric)
         fg_data = vals.pop("flatground")
 
         sorted_keys = envs_to_plot
         sorted_keys.sort(key=lambda x: (x[1], -x[0]))
 
-        y_points = [fg_data["mean"].item()]
-        errors = [fg_data["std"].item()]
-        x_labels = ["Flatground"]
+        # y_points = [fg_data["mean"]]
+        y_points = []
+        # errors = [fg_data["std"]]
+        # x_labels = ["Flatground"]
+        x_labels = []
 
         for key in sorted_keys:
-            y_points.append(vals[key]["mean"].item())
-            errors.append(vals[key]["std"].item())
-            x_labels.append(f"{key[0] * 100}% / {key[1]}")
+            y_points.append(vals[key]["mean"])
+            # errors.append(vals[key]["std"])
+            x_labels.append(f"{int(key[0] * 100)} / {key[1]}")
 
         # ax.bar(x_indices + bar_offset, y_points, width=width, yerr=errors, label=method, capsize=3.0)
-        y_points = [pt * 100 for pt in y_points]
-        ax.bar(x_indices + bar_offset, y_points, width=width, label=method, capsize=3.0)
+        y_points = [pt * factor for pt in y_points]
+        ax.bar(x_indices + bar_offset, y_points, width=width, label=method, capsize=3.0, color=color)
+        # if not metric == "collisions":
         for i, v in enumerate(y_points):
-            ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.0f}", ha="center", va="bottom", fontsize=6)
+            if metric == "reward":
+                ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.0f}", ha="center", va="bottom", fontsize=6)
+            else:
+                ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.1f}", ha="center", va="bottom", fontsize=6)
         bar_offset += width  # Shift next method's bars horizontally
 
     ax.set_xticks(x_indices + width / 2)  # Align ticks in the middle of grouped bars
@@ -836,24 +914,29 @@ def _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, n
     # ax.axvspan(4.5, 8.5, facecolor='r', alpha=0.1)
 
     ax.set_ylabel(metric)
-    ax.set_title(metric)
+    # ax.set_title(metric, pad=20)
     ax.legend(loc=(0.1, 1.02), ncol=2)
 
     if metric == "successful":
         ax.set_title("Terrain Traversal Success Rate", pad=25.0)
         ax.set_ylabel("Success Rate (%)")
     elif metric == "reward":
-        ax.set_title("Fraction of Per-timestep Training Reward Achieved")
-        ax.set_ylabel("Normalized Reward")
+        ax.set_title("Percentage of Per-timestep Training Reward Achieved", pad=25.0)
+        ax.set_ylabel("Normalized Reward (%)")
     elif metric == "distance_traveled":
-        ax.set_title("Distance Traveled per Episode")
+        ax.set_title("Distance Traveled", pad=25.0)
         ax.set_ylabel("Distance Traveled (m)")
     elif metric == "eps_len":
-        ax.set_title("Episode Length")
+        ax.set_title("Episode Length", pad=25.0)
         ax.set_ylabel("Episode Length (timesteps)")
     elif metric == "collisions":
-        ax.set_title("Collisions")
+        ax.set_title("Collisions per Timestep", pad=25.0)
         ax.set_ylabel("Average Number of Collisions")
+        # make y-axis log scale
+        ax.set_yscale('log')
+        # make y gridlines visible
+        # ax.yaxis.grid(True, which='both')
+        # ax.grid()
 
     path = os.path.join(args.save_dir, name + "_bars.svg")
     plt.savefig(path, bbox_inches='tight')

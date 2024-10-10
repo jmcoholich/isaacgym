@@ -1,6 +1,6 @@
 # Isaacgym
 
-Modified by Jeremiah Coholich for use in training on the [Unitree Aliengo](https://www.unitree.com/products/aliengo/) robot for the project [Learning High-Value Footstep Placements for Quadruped Robots](https://www.jeremiahcoholich.com/publication/quadruped_footsteps/).
+Modified by Jeremiah Coholich for use in training on the [Unitree Aliengo](https://www.unitree.com/products/aliengo/) robot for the project [Hierarchical Reinforcement Learning and Value Optimization for Challenging Quadruped Locomotion](https://www.jeremiahcoholich.com/publication/hrl_optim/).
 Original code from NVIDIA:
 https://developer.nvidia.com/isaac-gym (Preview Release 2)
 
@@ -25,7 +25,6 @@ Here is list of features I have added:
 - [Augumented Random Search](https://arxiv.org/abs/1803.07055) as an alternative to [PPO](https://arxiv.org/abs/1707.06347)
 
 ## Prereqs
-
 - Ubuntu 18.04 or 20.04.
 - Python 3.6, 3.7 or 3.8.
 - Minimum NVIDIA driver version: 460.32
@@ -81,14 +80,14 @@ To playback trained end-to-end policy
 
 ```python rlg_train.py --play --checkpoint <run ID>```
 
-### Old method
+### Proposed method
 ```python rlg_train.py --cfg_env 12_H_new_sota --seed 0 --device 1 --cfg_train 12 --headless```
 
 Playback trained policy
 
 ```python rlg_train.py --play --checkpoint <run ID>```
 
-### New Stuff
+<!-- ### New Stuff
 ```rlg_train.py --cfg_env 12_H_new_experiment --seed 1 --device 1 --cfg_train 12 --task AliengoRandom --headless```
 
 Playback trained policy
@@ -97,11 +96,10 @@ Playback trained policy
 
 To plot footstep targets add the flag `-asdf`
 
-To debug device-side asserts, switch to CPU pipeline with the flag `--pipline cpu`. This results in an actual stack trace.
+To debug device-side asserts, switch to CPU pipeline with the flag `--pipline cpu`. This results in an actual stack trace. -->
 
 ## Generalization/ High-level evaluation
 
-### Old high-level evaluation
 
 To evaluate the flat and hierarchical policy and generate all figures, run:
 
@@ -154,9 +152,9 @@ To walk forward on stepping stones:
 
 
 
-### New Evaluation
+<!-- ### New Evaluation
 
-TODO
+TODO -->
 
 
 <!-- ## Running on Skynet (Docker required due to Skynet using Ubuntu 16.04)

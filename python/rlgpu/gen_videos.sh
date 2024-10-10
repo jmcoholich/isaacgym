@@ -1,30 +1,45 @@
 # This script is for automatically generating videos on a remote server with a display.
 # Must be run from this directory
 
-export DISPLAY=:1
 
-models=(211130223242990594 211130223308996394 211130223315201609 211130224435963959 211130223347357130)
-names=("left_bias" "fwd_bias" "right_bias" "back_bias" "regular_dist")
+H_model=123750
+F_model=1234750
+H_model_fname="H_model_video"
+# don't forget, I think we need a gpu with a display attached for the camera rendering to work properly
+
+python rlg_train.py --play --checkpoint $H_model --ws 7 --timeout 2000 --plot_values --des_dir_coef 0.0 --des_dir_coef 50.0 --save_images --start_after 300 --file_prefix $H_model_fname  --headless  --device_id 0
+
+cd ../..
+
+python make_video.py --output_name=H_model_video --file_prefix $H_model_fname  --no_plots
+
+cd python/rlgpu
 
 
-for i in ${!names[@]}
-do
-    echo run_number:    $i
-    echo name:          ${names[$i]}
-    echo model:         ${models[$i]}
-    echo
+# export DISPLAY=:1
 
-    python rlg_train.py --play --checkpoint ${models[$i]} --ws 7 --timeout 2000 --plot_values --des_dir_coef 0.0 --cfg_env_override 9_trot_in_place --save_images --exit_after 1800 --start_after 300 --file_prefix ${names[$i]}
+# models=(211130223242990594 211130223308996394 211130223315201609 211130224435963959 211130223347357130)
+# names=("left_bias" "fwd_bias" "right_bias" "back_bias" "regular_dist")
 
-    cd ../..
 
-    python make_video.py --output_name=${names[$i]} --file_prefix ${names[$i]}
+# for i in ${!names[@]}
+# do
+#     echo run_number:    $i
+#     echo name:          ${names[$i]}
+#     echo model:         ${models[$i]}
+#     echo
 
-    cd python/rlgpu
+#     python rlg_train.py --play --checkpoint ${models[$i]} --ws 7 --timeout 2000 --plot_values --des_dir_coef 0.0 --cfg_env_override 9_trot_in_place --save_images --exit_after 1800 --start_after 300 --file_prefix ${names[$i]}
 
-done
+#     cd ../..
 
-exit
+#     python make_video.py --output_name=${names[$i]} --file_prefix ${names[$i]}
+
+#     cd python/rlgpu
+
+# done
+
+# exit
 
 # script for showing different directions
 

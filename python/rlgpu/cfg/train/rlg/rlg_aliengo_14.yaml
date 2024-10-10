@@ -107,7 +107,7 @@ params:
     bounds_loss_coef: 0.00025
     games_to_track: 100
 
-    max_epochs: 10_000
+    max_epochs: 750
     # save_best_after: 20
     # score_to_win: 20000000000000000000000
     save_frequency: 250
