@@ -9,6 +9,7 @@ import torch
 import numpy as np
 import os
 import imageio
+import shutil
 
 
 import time
@@ -33,6 +34,11 @@ from .aliengo_utils.ss_trot_footstep_generator import SSTrotFootstepGenerator
 class Aliengo(BaseTask):
     def __init__(self, cfg, sim_params, physics_engine, device_type, device_id,
                  headless):
+        img_dir = "frames"
+        if os.path.exists(img_dir):
+            shutil.rmtree(img_dir)
+        os.mkdir(img_dir)
+        self.img_dir = img_dir
         # self.global_min_norm = 1e5
         # self.global_lowest_foot = 1e5
         print("Using {} CPU threads".format(torch.get_num_threads()))
@@ -525,9 +531,12 @@ class Aliengo(BaseTask):
         print("elapsed time: {}".format(time.time() - start))  # 1.5 s for vectorized 100 envs
 
     def _create_camera_for_video(self):
+        view = "back"
+        view = "side"
         props = g.CameraProperties()
         # props.width = 960  # this is half of 1080 resolution
-        props.width = 660
+        # props.width = 660
+        props.width = 1920 if view == "side" else 660
         props.height = 1080
         # props.enable_tensors = False
         props.enable_tensors = True
@@ -544,7 +553,15 @@ class Aliengo(BaseTask):
 
         # to have the camera follow the robot from a fixed distance
         local_transform = g.Transform()
-        local_transform.p = g.Vec3(-0.75, 0.0, 0.0)
+
+        if view == "back":
+            local_transform.p = g.Vec3(-0.75, 0.0, 0.0)
+        elif view == "side":
+            local_transform.p = g.Vec3(0.1, 2.0, 0.5)
+            local_transform.r = g.Quat.from_euler_zyx(0.0, 15.0 * 3.14159 / 180, -90.0 * 3.14159 / 180)
+        else:
+            raise ValueError("Invalid view")
+
         self.gym.attach_camera_to_body(
             self.video_camera, self.envs[0], self.actor_handles[0],
             local_transform, g.FOLLOW_POSITION)
@@ -782,12 +799,11 @@ class Aliengo(BaseTask):
         self.gym.start_access_image_tensors(self.sim)
 
         # save images
-        img_dir = "test_imgs"
-        if not os.path.exists(img_dir):
-            os.mkdir(img_dir)
+        img_dir = self.img_dir
+
         fname = os.path.join(
             img_dir,
-            f"{self.args.file_prefix}-cam-{self.progress_buf[0]}.png")
+            f"frame-{self.progress_buf[0]:04}.png")
         cam_img = self.video_camera_image.cpu().numpy()
         imageio.imwrite(fname, cam_img)
         self.gym.end_access_image_tensors(self.sim)

@@ -1,20 +1,20 @@
 # This script is for automatically generating videos on a remote server with a display.
 # Must be run from this directory
-
+set -ex
 
 H_model=123750
 F_model=1234750
 H_model_fname="H_model_video"
+F_model_fname="F_model_video"
 # don't forget, I think we need a gpu with a display attached for the camera rendering to work properly
 
-python rlg_train.py --play --checkpoint $H_model --ws 7 --timeout 2000 --plot_values --des_dir_coef 0.0 --des_dir_coef 50.0 --save_images --start_after 300 --file_prefix $H_model_fname  --headless  --device_id 0
+python rlg_train.py --play --checkpoint $H_model --timeout 20000 --plot_values --des_dir_coef 0.0 --des_dir_coef 50.0 --save_images --start_after 50 --file_prefix $H_model_fname  --headless --device_id 0 --seed 0
 
-cd ../..
+python make_video.py H_model
 
-python make_video.py --output_name=H_model_video --file_prefix $H_model_fname  --no_plots
+python rlg_train.py --play --checkpoint $F_model --timeout 20000 --save_images --file_prefix $F_model_fname  --headless --device_id 0 --seed 0
 
-cd python/rlgpu
-
+python make_video.py F_model
 
 # export DISPLAY=:1
 

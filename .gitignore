@@ -5,7 +5,8 @@ data/
 *.svg
 *.pkl
 *.pt
-
+frames/
+videos/
 *.pbz2
 python/rlgpu/logs/
 *.pyc
