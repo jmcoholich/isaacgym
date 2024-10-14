@@ -10,6 +10,7 @@ videos/
 *.pbz2
 python/rlgpu/logs/
 *.pyc
+final_frames/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 python/rlgpu/tasks/__pycache__/

@@ -774,6 +774,8 @@ class Aliengo(BaseTask):
         #    - e.g. compute reward, compute observations
         self.progress_buf += 1
         env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
+        self.old_reset_buf = self.reset_buf.clone()
+        self.old_progress_buf = self.progress_buf.clone()
         if len(env_ids) > 0:
             self.reset(env_ids)
 
@@ -810,8 +812,10 @@ class Aliengo(BaseTask):
         # if (self.progress_buf[0] >= self.args.exit_after
         #         or (self.reset_buf[0]
         #             and self.progress_buf[0] > self.args.start_after)):
-        if self.reset_buf[0] and self.progress_buf[0] > 10:
-            os.sys.exit()
+
+        # moved this code to value_function_utils in rl_games
+        # if self.reset_buf[0] and self.progress_buf[0] > 10:
+        #     os.sys.exit()
 
     def update_graphics(self):
         self.gym.step_graphics(self.sim)

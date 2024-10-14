@@ -6,15 +6,22 @@ H_model=123750
 F_model=1234750
 H_model_fname="H_model_video"
 F_model_fname="F_model_video"
+TIMEOUT=20000
 # don't forget, I think we need a gpu with a display attached for the camera rendering to work properly
 
-python rlg_train.py --play --checkpoint $H_model --timeout 20000 --plot_values --des_dir_coef 0.0 --des_dir_coef 50.0 --save_images --start_after 50 --file_prefix $H_model_fname  --headless --device_id 0 --seed 0
+# time how long this script takes in minutes
+start_time=$(date +%s)
+
+python rlg_train.py --play --checkpoint $H_model --timeout $TIMEOUT --plot_values --des_dir_coef 0.0 --des_dir_coef 50.0 --save_images --start_after 50 --file_prefix $H_model_fname  --headless --device_id 0 --seed 0
 
 python make_video.py H_model
 
-python rlg_train.py --play --checkpoint $F_model --timeout 20000 --save_images --file_prefix $F_model_fname  --headless --device_id 0 --seed 0
+python rlg_train.py --play --checkpoint $F_model --timeout $TIMEOUT --save_images --file_prefix $F_model_fname  --headless --device_id 0 --seed 0
 
 python make_video.py F_model
+
+end_time=$(date +%s)
+echo "Total time: $((end_time - start_time)) seconds"
 
 # export DISPLAY=:1
 
