@@ -8,11 +8,11 @@ class SteppingStones:
 
         if isinstance(cfg['density'], float):
             if not 0.0 <= cfg["density"] <= 1.0:
-                raise ValueError
+                raise ValueError("Density must be between 0 and 1.")
         elif isinstance(cfg['density'], list):
             if not (0.0 <= cfg["density"][0] <= 1.0
                     and 0.0 <= cfg["density"][1] <= 1.0):
-                raise ValueError()
+                raise ValueError("Density must be between 0 and 1.")
         else:
             raise ValueError()
         self.task = task

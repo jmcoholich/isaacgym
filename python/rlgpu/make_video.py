@@ -4,61 +4,82 @@ import sys
 import os
 from glob import glob
 import cv2
+from concurrent.futures import ThreadPoolExecutor
 
 def main():
     """load all frames from "frames". The files are FL-frame-0001.png, FL-frame-0002.png, ...
     For each of FL, FR, RL, RR, we will load all frames and compile them into a video.
     There is also the camera frames where are named frame-0001.png, frame-0002.png, ...
     """
-
-    # load all frames
-    frames_dict = {}
-    feet = ['FL', 'FR', 'RL', 'RR']
-    # Load frames for each camera
-    for foot in feet:
-        frame_pattern = os.path.join('frames', f"{foot}-frame-*.png")
-        frames_dict[foot] = sorted(glob(frame_pattern))
-
-    # Load general camera frames
-    general_frame_pattern = os.path.join('frames', "frame-*.png")
-    frames_dict['camera'] = sorted(glob(general_frame_pattern))
-
-    # assemble and save frames
-    frames_dir = "final_frames"
-    if os.path.exists(frames_dir):
-        os.system(f"rm -rf {frames_dir}")
-    os.makedirs(frames_dir)
-    frame_idx = 0
-    while True:
-        try:
-            frame = frames_dict['camera'][frame_idx + 1]
-            fl = frames_dict['FL'][frame_idx]
-            fr = frames_dict['FR'][frame_idx]
-            rl = frames_dict['RL'][frame_idx]
-            rr = frames_dict['RR'][frame_idx]
-        except IndexError:
-            break
-        img = cv2.imread(frame)
-        fl = cv2.imread(fl)
-        fr = cv2.imread(fr)
-        rl = cv2.imread(rl)
-        rr = cv2.imread(rr)
-
-        # add each foot plot to its respective corner of the frame
-        img[:fl.shape[0], :fl.shape[1]] = fl
-        img[:fr.shape[0], -fr.shape[1]:] = fr
-        img[-rl.shape[0]:, :rl.shape[1]] = rl
-        img[-rr.shape[0]:, -rr.shape[1]:] = rr
-
-        cv2.imwrite(os.path.join(frames_dir, f"frame-{frame_idx:04d}.png"), img)
-        frame_idx += 1
-
-
-    # the name is the first commandline arg
     try:
         name = sys.argv[1]
     except IndexError:
         print("Please provide a name for the video")
+    if name[0] == 'F':
+        frames_dir = "frames"
+    elif name[0] == 'H':
+
+        # load all frames
+        frames_dict = {}
+        feet = ['FL', 'FR', 'RL', 'RR']
+        # Load frames for each camera
+        for foot in feet:
+            frame_pattern = os.path.join('frames', f"{foot}-frame-*.png")
+            frames_dict[foot] = sorted(glob(frame_pattern))
+
+        # Load general camera frames
+        general_frame_pattern = os.path.join('frames', "frame-*.png")
+        frames_dict['camera'] = sorted(glob(general_frame_pattern))
+
+        # assemble and save frames
+        frames_dir = "final_frames"
+        if os.path.exists(frames_dir):
+            os.system(f"rm -rf {frames_dir}")
+        os.makedirs(frames_dir)
+        frame_idx = 0
+        with ThreadPoolExecutor() as executor:
+            while True:
+                try:
+                    frame = frames_dict['camera'][frame_idx + 1]
+                    fl = frames_dict['FL'][frame_idx]
+                    fr = frames_dict['FR'][frame_idx]
+                    rl = frames_dict['RL'][frame_idx]
+                    rr = frames_dict['RR'][frame_idx]
+                except IndexError:
+                    break
+                with ThreadPoolExecutor() as executor2:
+                    futures = []
+                    futures.append(executor2.submit(cv2.imread, frame))
+                    futures.append(executor2.submit(cv2.imread, fl))
+                    futures.append(executor2.submit(cv2.imread, fr))
+                    futures.append(executor2.submit(cv2.imread, rl))
+                    futures.append(executor2.submit(cv2.imread, rr))
+                    img = futures[0].result()
+                    fl = futures[1].result()
+                    fr = futures[2].result()
+                    rl = futures[3].result()
+                    rr = futures[4].result()
+
+                    # img = cv2.imread(frame)
+                    # fl = cv2.imread(fl)
+                    # fr = cv2.imread(fr)
+                    # rl = cv2.imread(rl)
+                    # rr = cv2.imread(rr)
+
+                # add each foot plot to its respective corner of the frame
+                img[:fl.shape[0], :fl.shape[1]] = fl
+                img[:fr.shape[0], -fr.shape[1]:] = fr
+                img[-rl.shape[0]:, :rl.shape[1]] = rl
+                img[-rr.shape[0]:, -rr.shape[1]:] = rr
+
+                # cv2.imwrite(os.path.join(frames_dir, f"frame-{frame_idx:04d}.png"), img)
+                executor.submit(cv2.imwrite, os.path.join(frames_dir, f"frame-{frame_idx:04d}.png"), img)
+                frame_idx += 1
+    else:
+        print("Please provide a name that starts with F or H")
+        print()
+        return
+    # the name is the first commandline arg
     results_dir = "videos"
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
