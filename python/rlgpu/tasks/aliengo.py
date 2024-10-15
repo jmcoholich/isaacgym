@@ -813,9 +813,10 @@ class Aliengo(BaseTask):
         #         or (self.reset_buf[0]
         #             and self.progress_buf[0] > self.args.start_after)):
 
-        # moved this code to value_function_utils in rl_games
-        # if self.reset_buf[0] and self.progress_buf[0] > 10:
-        #     os.sys.exit()
+        # if plot values, the value optimization code will handle exit due to
+        # need to clean up multiprocessing of plot saving
+        if not self.cfg["plot_values"] and self.reset_buf[0] and self.progress_buf[0] > 10:
+            os.sys.exit()
 
     def update_graphics(self):
         self.gym.step_graphics(self.sim)

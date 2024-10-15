@@ -213,6 +213,7 @@ def aliengo_params_helper(cfg, cfg_train, args):
         cfg_train['params']['config']['random_footsteps'] = args.random_footsteps
     else:
         cfg_train['params']['config']['plot_values'] = False
+    cfg["env"]["plot_values"] = cfg_train['params']['config']['plot_values']
 
     # process hyperparam overrides
     if args.num_neurons is not None:
