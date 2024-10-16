@@ -34,7 +34,10 @@ from .aliengo_utils.ss_trot_footstep_generator import SSTrotFootstepGenerator
 class Aliengo(BaseTask):
     def __init__(self, cfg, sim_params, physics_engine, device_type, device_id,
                  headless):
-        img_dir = "frames"
+        if cfg['env']['plot_values']:
+            img_dir = "H_frames"
+        else:
+            img_dir = "F_frames"
         if os.path.exists(img_dir):
             shutil.rmtree(img_dir)
         os.mkdir(img_dir)
@@ -536,7 +539,9 @@ class Aliengo(BaseTask):
         props = g.CameraProperties()
         # props.width = 960  # this is half of 1080 resolution
         # props.width = 660
-        props.width = 1920 if view == "side" else 660
+        # breakpoint()
+        # props.width = 1920 if view == "side" else 660
+        props.width = int(1920 * 3/5 - 5) if self.cfg['plot_values'] else int(1920 * 2/5 - 5)
         props.height = 1080
         # props.enable_tensors = False
         props.enable_tensors = True
@@ -557,7 +562,11 @@ class Aliengo(BaseTask):
         if view == "back":
             local_transform.p = g.Vec3(-0.75, 0.0, 0.0)
         elif view == "side":
-            local_transform.p = g.Vec3(0.1, 2.0, 0.5)
+            if self.cfg['plot_values']:
+                y = 1.5
+            else:
+                y = 1.0
+            local_transform.p = g.Vec3(0.1, y, 0.5)
             local_transform.r = g.Quat.from_euler_zyx(0.0, 15.0 * 3.14159 / 180, -90.0 * 3.14159 / 180)
         else:
             raise ValueError("Invalid view")

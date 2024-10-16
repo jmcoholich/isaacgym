@@ -6,6 +6,8 @@ data/
 *.pkl
 *.pt
 frames/
+H_frames/
+F_frames/
 videos/
 *.pbz2
 python/rlgpu/logs/
