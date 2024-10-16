@@ -542,7 +542,7 @@ class Aliengo(BaseTask):
         # breakpoint()
         # props.width = 1920 if view == "side" else 660
         props.width = int(1920 * 3/5 - 5) if self.cfg['plot_values'] else int(1920 * 2/5 - 5)
-        props.height = 1080
+        props.height = 1080 - 100
         # props.enable_tensors = False
         props.enable_tensors = True
 

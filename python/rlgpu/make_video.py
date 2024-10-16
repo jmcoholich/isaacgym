@@ -39,12 +39,13 @@ def main():
     frame_idx = 0
     colorbar = cv2.imread("colorbar.png")
     # scale by 0.6
-    scale = 0.55
+    scale = 0.65
     colorbar = cv2.resize(colorbar, (int(colorbar.shape[1]*scale), int(colorbar.shape[0]*scale)))
 
     legend = cv2.imread("legend_optimal_footstep_target.png")
     scale = 0.8
     legend = cv2.resize(legend, (int(legend.shape[1]*scale), int(legend.shape[0]*scale)))
+    fps = sys.argv[3]
 
     with ThreadPoolExecutor() as executor:
         while True:
@@ -77,18 +78,38 @@ def main():
             H_img[:fr.shape[0], -fr.shape[1]:] = fr
             H_img[-rl.shape[0]:, :rl.shape[1]] = rl
             H_img[-rr.shape[0]:, -rr.shape[1]:] = rr
-            # colorbar should be centered on the right edge of the H_img
-            mid = 1080//2
-            cbar_half = colorbar.shape[0]//2
-            H_img[mid-cbar_half:mid+colorbar.shape[0]-cbar_half, -colorbar.shape[1]:] = colorbar
+            # colorbar should be centered on the bottom edge
+            # H_img[mid-cbar_half:mid+cbar_half, :colorbar.shape[1]] = colorbar
+            mid = int(H_img.shape[1]/2)
+            cbar_half = int(colorbar.shape[1]/2)
+            marg = 15
+            H_img[-(colorbar.shape[0] + marg):-marg, mid-cbar_half:mid-cbar_half + colorbar.shape[1]] = colorbar
             img = np.zeros((1080, 1920, 3))
             # legend should go right under the colorbar, aligned with the right edge
+            mid = int(H_img.shape[0]/2)
+            cbar_half = int(colorbar.shape[0]/2)
             H_img[mid+colorbar.shape[0]-cbar_half-legend.shape[0]:mid+colorbar.shape[0]-cbar_half, -legend.shape[1]:] = legend
+            # Add text to top center of the image
+            title = "Proposed Method"
+            cv2.putText(H_img, title, (int(H_img.shape[1]/2)-100, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
+            title = "End-to-End RL"
+            cv2.putText(F_img, title, (int(F_img.shape[1]/2)-100, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
             # H img on the right, L img on the left
-            img[:, :H_img.shape[1]] = H_img
-            img[:, -F_img.shape[1]:] = F_img
+            top_margin = 55
+            img[top_margin: H_img.shape[0] + top_margin, :H_img.shape[1]] = H_img
+            img[top_margin: H_img.shape[0] + top_margin:, -F_img.shape[1]:] = F_img
+            # make the top margin white
+            img[:top_margin -5, :] = 255
+
+            # add subtitle in the top margin. Suptitle is the second argument
+            suptitle = sys.argv[2]
+            cv2.putText(img, suptitle, (int(img.shape[1]/2)-100, 37), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+
+            speed = int(fps)/60
+            # Write speed on bottom right in a black box
+            cv2.putText(img, f"Speed: {speed}x", (int(img.shape[1]-250), int(img.shape[0]-100)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
 
 
             # cv2.imwrite(os.path.join(frames_dir, f"frame-{frame_idx:04d}.png"), img)
@@ -100,8 +121,7 @@ def main():
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
     date_time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
-    for fps in [15, 30, 60]:
-        compile_video(date_time_str, frames_dir, results_dir, name, fps)
+    compile_video(date_time_str, frames_dir, results_dir, name, fps)
 
 
 def run_cmd(command, env=None):
