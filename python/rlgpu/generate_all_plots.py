@@ -667,7 +667,8 @@ def avg_across_seeds(data, metric, floats=False):
             output[env]["std"] = norm_rew_per_t.mean().item()
         elif metric == "collisions":  # divide by number of timesteps in episode
             # breakpoint()
-            collisions_per_t = data[env][metric] / data[env]["eps_len"]
+            # collisions_per_t = data[env][metric] / data[env]["eps_len"]
+            collisions_per_t = data[env][metric]
             output[env]["mean"] = collisions_per_t.mean().item()
             output[env]["std"] = collisions_per_t.std().item()
         else:
@@ -933,7 +934,7 @@ def _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, n
         ax.set_title("Collisions per Timestep", pad=25.0)
         ax.set_ylabel("Average Number of Collisions")
         # make y-axis log scale
-        ax.set_yscale('log')
+        # ax.set_yscale('log')
         # make y gridlines visible
         # ax.yaxis.grid(True, which='both')
         # ax.grid()

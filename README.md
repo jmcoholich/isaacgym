@@ -108,6 +108,14 @@ To evaluate the flat and hierarchical policy and generate all figures, run:
 
 ```bash generate_results.bash <hierarchical policy id>  <flat policy id> <name of plots folder>```
 
+To generate paper results from the saved checkpoints, run
+
+```bash generate_results.bash 123750 1234750 <name of plots folder> 1 50```
+
+To just generate the plots from saved checkpoint evaluations, run
+
+```python generate_all_plots.py --h_id 123750 --f_id 1234750 --save_dir plots/post_acc --no_regen```
+
 #### All Evaluation
 To evaluate a flat RL policy run
 
