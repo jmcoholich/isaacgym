@@ -668,9 +668,13 @@ def avg_across_seeds(data, metric, floats=False):
         elif metric == "collisions":  # divide by number of timesteps in episode
             # breakpoint()
             # collisions_per_t = data[env][metric] / data[env]["eps_len"]
-            collisions_per_t = data[env][metric]
-            output[env]["mean"] = collisions_per_t.mean().item()
-            output[env]["std"] = collisions_per_t.std().item()
+            collisions = 0
+            for i in range(len(data[env][metric])):
+                collisions += data[env][metric][i, 1: data[env]["eps_len"][i]].sum().item()
+            timesteps = data[env]["eps_len"].sum().item()
+            collisions_per_t = collisions / timesteps
+            output[env]["mean"] = collisions_per_t
+            output[env]["std"] = None
         else:
             output[env]["mean"] = data[env][metric].mean().item()
             output[env]["std"] = data[env][metric].std().item()
@@ -899,13 +903,20 @@ def _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, n
 
         # ax.bar(x_indices + bar_offset, y_points, width=width, yerr=errors, label=method, capsize=3.0)
         y_points = [pt * factor for pt in y_points]
-        ax.bar(x_indices + bar_offset, y_points, width=width, label=method, capsize=3.0, color=color)
+        # ax.bar(x_indices + bar_offset, y_points, width=width, label=method, capsize=3.0, color=color)
+        # give the bars some relief
+        ax.bar(x_indices + bar_offset, y_points, width=width, label=method, capsize=3.0, color=color, edgecolor='black', linewidth=0.125)
+        # add horizontal grid lines at every 10 units. The gridlines should go behind the bars
+        # ax.yaxis.grid(True, which='both')
+        ax.set_axisbelow(True)
+        ax.yaxis.grid(True, which='both')
+
         # if not metric == "collisions":
-        for i, v in enumerate(y_points):
-            if metric == "reward":
-                ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.0f}", ha="center", va="bottom", fontsize=6)
-            else:
-                ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.1f}", ha="center", va="bottom", fontsize=6)
+        # for i, v in enumerate(y_points):
+        #     if metric == "reward":
+        #         ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.0f}", ha="center", va="bottom", fontsize=6)
+        #     else:
+        #         ax.text(x_indices[i] + bar_offset - width / 2 * 0, v + 0.02, f"{v:.1f}", ha="center", va="bottom", fontsize=6)
         bar_offset += width  # Shift next method's bars horizontally
 
     ax.set_xticks(x_indices + width / 2)  # Align ticks in the middle of grouped bars
@@ -934,12 +945,12 @@ def _generate_single_bar_plot(data, sota, args, envs_to_plot, metric, figsize, n
         ax.set_title("Collisions per Timestep", pad=25.0)
         ax.set_ylabel("Average Number of Collisions")
         # make y-axis log scale
-        # ax.set_yscale('log')
+        ax.set_yscale('log')
         # make y gridlines visible
         # ax.yaxis.grid(True, which='both')
         # ax.grid()
 
-    path = os.path.join(args.save_dir, name + "_bars.svg")
+    path = os.path.join(args.save_dir, name + "_bars_rev2.svg")
     plt.savefig(path, bbox_inches='tight')
     print(f"Saved plot at {path}")
 

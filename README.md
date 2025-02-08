@@ -102,7 +102,7 @@ To plot footstep targets add the flag `-asdf`
 To debug device-side asserts, switch to CPU pipeline with the flag `--pipline cpu`. This results in an actual stack trace. -->
 
 ## Generalization/ High-level evaluation
-
+NOTE: The final evals require about 30 Gb VRAM.
 
 To evaluate the flat and hierarchical policy and generate all figures, run:
 

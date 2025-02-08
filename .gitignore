@@ -1,7 +1,7 @@
 test_imgs/
 plots/
 *.avi
-*.svg
+# *.svg
 *.pkl
 *.pt
 frames/
@@ -22,7 +22,7 @@ wandb/
 *$py.class
 *.cpython-37.pyc
 *.log
-*.svg
+# *.svg
 *.pot
 
 *.pyc
